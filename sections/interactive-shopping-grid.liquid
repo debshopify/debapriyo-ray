@@ -7,6 +7,7 @@
   id="InteractiveShopping-{{ section.id }}"
   class="interactive-shopping"
   data-section-id="{{ section.id }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
 >
   {% if section_heading != blank %}
     <h2 class="interactive-shopping__heading">
@@ -14,7 +15,9 @@
     </h2>
   {% endif %}
 
+  <!-- IMAGE GRID -->
   <div class="interactive-shopping__grid">
+
     {% for block in section.blocks %}
       {% assign product = block.settings.product %}
       {% assign hotspot_image = block.settings.image %}
@@ -23,7 +26,9 @@
         class="interactive-shopping__item"
         {{ block.shopify_attributes }}
       >
+
         {% if hotspot_image != blank %}
+
           {{
             hotspot_image
             | image_url: width: 1200
@@ -32,7 +37,9 @@
               class: 'interactive-shopping__image',
               alt: hotspot_image.alt
           }}
+
         {% elsif product != blank and product.featured_image != blank %}
+
           {{
             product.featured_image
             | image_url: width: 1200
@@ -41,11 +48,17 @@
               class: 'interactive-shopping__image',
               alt: product.title
           }}
+
         {% else %}
+
           {{ 'product-1' | placeholder_svg_tag: 'interactive-shopping__placeholder' }}
+
         {% endif %}
 
+
         {% if product != blank %}
+
+          <!-- PRODUCT HOTSPOT -->
           <button
             type="button"
             class="interactive-shopping__hotspot"
@@ -62,43 +75,80 @@
             <span>+</span>
           </button>
 
+
+          <!-- PRODUCT JSON -->
           <script
             type="application/json"
             id="ProductData-{{ section.id }}-{{ block.id }}"
             data-product-data
           >
-            {{ product | json }}
+            {
+              "id": {{ product.id | json }},
+              "title": {{ product.title | json }},
+              "handle": {{ product.handle | json }},
+              "description": {{ product.description | json }},
+              "featured_image": {% if product.featured_image != blank %}{{ product.featured_image | image_url: width: 800 | json }}{% else %}null{% endif %},
+              "options": {{ product.options | json }},
+              "variants": [
+                {% for variant in product.variants %}
+                  {
+                    "id": {{ variant.id | json }},
+                    "title": {{ variant.title | json }},
+                    "available": {{ variant.available | json }},
+                    "price": {{ variant.price | json }},
+                    "compare_at_price": {{ variant.compare_at_price | json }},
+                    "options": {{ variant.options | json }},
+                    "featured_image": {% if variant.featured_image != blank %}{{ variant.featured_image | image_url: width: 800 | json }}{% else %}null{% endif %}
+                  }{% unless forloop.last %},{% endunless %}
+                {% endfor %}
+              ]
+            }
           </script>
+
         {% endif %}
+
       </div>
+
     {% endfor %}
+
   </div>
 
-  <!-- Product popup -->
+
+  <!-- PRODUCT POPUP -->
   <div
     class="interactive-shopping__overlay"
     id="ShoppingPopup-{{ section.id }}"
     aria-hidden="true"
   >
-    <div class="interactive-shopping__backdrop" data-popup-close></div>
+
+    <div
+      class="interactive-shopping__backdrop"
+      data-popup-close
+    ></div>
 
     <div
       class="interactive-shopping__modal"
       role="dialog"
       aria-modal="true"
       aria-labelledby="ShoppingProductTitle-{{ section.id }}"
+      tabindex="-1"
     >
+
       <button
         type="button"
         class="interactive-shopping__close"
-        aria-label="Close popup"
         data-popup-close
+        aria-label="Close popup"
       >
         &times;
       </button>
 
+
+      <!-- PRODUCT INFORMATION -->
       <div class="interactive-shopping__product">
+
         <div class="interactive-shopping__product-image-wrapper">
+
           <img
             class="interactive-shopping__product-image"
             src=""
@@ -106,9 +156,12 @@
             width="400"
             height="400"
           >
+
         </div>
 
+
         <div class="interactive-shopping__product-info">
+
           <h3
             class="interactive-shopping__product-title"
             id="ShoppingProductTitle-{{ section.id }}"
@@ -117,10 +170,15 @@
           <p class="interactive-shopping__product-price"></p>
 
           <div class="interactive-shopping__product-description"></div>
+
         </div>
+
       </div>
 
+
+      <!-- PRODUCT VARIANTS AND ADD TO CART -->
       <form class="interactive-shopping__form">
+
         <div class="interactive-shopping__options"></div>
 
         <button
@@ -136,15 +194,30 @@
           role="status"
           aria-live="polite"
         ></p>
+
       </form>
+
     </div>
+
   </div>
+
 </section>
 
+
 <style>
+
+  /* SECTION */
+
   #InteractiveShopping-{{ section.id }} {
     width: 100%;
-    padding: {{ section.settings.padding_top }}px 20px {{ section.settings.padding_bottom }}px;
+    padding:
+      {{ section.settings.padding_top }}px
+      20px
+      {{ section.settings.padding_bottom }}px;
+    box-sizing: border-box;
+  }
+
+  #InteractiveShopping-{{ section.id }} * {
     box-sizing: border-box;
   }
 
@@ -153,13 +226,22 @@
     margin: 0 0 30px;
   }
 
+
+  /* GRID */
+
   #InteractiveShopping-{{ section.id }} .interactive-shopping__grid {
     display: grid;
-    grid-template-columns: repeat({{ section.settings.columns }}, minmax(0, 1fr));
+    grid-template-columns: repeat(
+      {{ section.settings.columns }},
+      minmax(0, 1fr)
+    );
     gap: {{ section.settings.gap }}px;
     max-width: {{ section.settings.max_width }}px;
     margin: 0 auto;
   }
+
+
+  /* IMAGE */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__item {
     position: relative;
@@ -176,36 +258,42 @@
     object-fit: cover;
   }
 
+
+  /* HOTSPOT */
+
   #InteractiveShopping-{{ section.id }} .interactive-shopping__hotspot {
     position: absolute;
     transform: translate(-50%, -50%);
-    width: 27px;
-    height: 27px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
     border: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.92);
+    background: #fff;
     color: #111;
-    font-size: 19px;
+    font-size: 21px;
     font-weight: 400;
     line-height: 1;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
-    transition: transform .2s ease, background .2s ease;
-    z-index: 2;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .2);
+    transition: transform .2s ease;
+    z-index: 5;
   }
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__hotspot:hover {
     transform: translate(-50%, -50%) scale(1.2);
-    background: #fff;
   }
+
+
+  /* POPUP OVERLAY */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__overlay {
     position: fixed;
     inset: 0;
-    z-index: 99999;
+    z-index: 999999;
     display: none;
     align-items: center;
     justify-content: center;
@@ -213,27 +301,36 @@
   }
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__overlay.is-open {
-    display: flex;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, .48);
+    background: rgba(0, 0, 0, .5);
+    cursor: pointer;
   }
+
+
+  /* POPUP MODAL */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__modal {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     width: 100%;
     max-width: 390px;
     max-height: 90vh;
     overflow-y: auto;
     background: #fff;
     padding: 45px 25px 25px;
-    box-sizing: border-box;
     color: #111;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .15);
   }
+
+
+  /* CLOSE BUTTON */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__close {
     position: absolute;
@@ -241,11 +338,15 @@
     right: 15px;
     border: 0;
     background: transparent;
-    font-size: 29px;
+    font-size: 30px;
     line-height: 1;
     cursor: pointer;
     color: #111;
+    padding: 5px;
   }
+
+
+  /* PRODUCT DETAILS */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__product {
     display: grid;
@@ -279,14 +380,23 @@
     margin: 0 0 12px;
   }
 
-  #InteractiveShopping-{{ section.id }} .interactive-shopping__product-description {
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__product-price del {
+    margin-left: 7px;
     font-size: 15px;
-    line-height: 1.4;
+    color: #888;
+  }
+
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__product-description {
+    font-size: 14px;
+    line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
+
+  /* VARIANT OPTIONS */
+
   #InteractiveShopping-{{ section.id }} .interactive-shopping__form {
-    margin-top: 15px;
+    margin-top: 20px;
   }
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__option {
@@ -295,7 +405,7 @@
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__option label {
     display: block;
-    font-size: 16px;
+    font-size: 15px;
     margin-bottom: 8px;
   }
 
@@ -307,14 +417,17 @@
     border: 1px solid #aaa;
     border-radius: 0;
     color: #111;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
   }
+
+
+  /* ADD TO CART */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__add-button {
     width: 100%;
     height: 57px;
-    margin-top: 45px;
+    margin-top: 25px;
     padding: 0 22px;
     border: none;
     background: #000;
@@ -322,7 +435,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: .4px;
     cursor: pointer;
   }
@@ -341,7 +454,11 @@
     margin: 10px 0 0;
   }
 
+
+  /* MOBILE */
+
   @media (max-width: 749px) {
+
     #InteractiveShopping-{{ section.id }} {
       padding-left: 12px;
       padding-right: 12px;
@@ -378,23 +495,63 @@
       font-size: 13px;
     }
 
-    #InteractiveShopping-{{ section.id }} .interactive-shopping__add-button {
-      margin-top: 25px;
-    }
   }
+
 </style>
 
+
 <script>
+
 (function () {
-  // Register global listeners only once.
+
+  /* ---------------------------------
+     GLOBAL INITIALIZATION
+  --------------------------------- */
+
   if (window.interactiveShoppingInitialized) return;
+
   window.interactiveShoppingInitialized = true;
 
   let activeRoot = null;
   let activeVariant = null;
+  let activeProduct = null;
   let previousFocus = null;
 
-  function formatPrice(cents, currency) {
+
+  /* ---------------------------------
+     ELEMENTS
+  --------------------------------- */
+
+  function getElements(root) {
+
+    const popup = root.querySelector(
+      '.interactive-shopping__overlay'
+    );
+
+    return {
+      popup: popup,
+      image: popup.querySelector('.interactive-shopping__product-image'),
+      title: popup.querySelector('.interactive-shopping__product-title'),
+      price: popup.querySelector('.interactive-shopping__product-price'),
+      description: popup.querySelector('.interactive-shopping__product-description'),
+      options: popup.querySelector('.interactive-shopping__options'),
+      button: popup.querySelector('.interactive-shopping__add-button'),
+      form: popup.querySelector('.interactive-shopping__form'),
+      message: popup.querySelector('.interactive-shopping__message'),
+      close: popup.querySelector('.interactive-shopping__close')
+    };
+
+  }
+
+
+  /* ---------------------------------
+     FORMAT PRICE
+  --------------------------------- */
+
+  function formatPrice(cents) {
+
+    const currency = activeRoot.dataset.currency || 'INR';
+
     return new Intl.NumberFormat(
       document.documentElement.lang || 'en',
       {
@@ -402,53 +559,132 @@
         currency: currency
       }
     ).format(cents / 100);
+
   }
 
-  function openPopup(root, product, trigger) {
-    const popup = root.querySelector('.interactive-shopping__overlay');
 
-    if (!popup || !product || !product.variants) return;
+  /* ---------------------------------
+     UPDATE PRICE
+  --------------------------------- */
 
-    activeRoot = root;
-    previousFocus = trigger;
-
-    const image = popup.querySelector('.interactive-shopping__product-image');
-    const title = popup.querySelector('.interactive-shopping__product-title');
-    const price = popup.querySelector('.interactive-shopping__product-price');
-    const description = popup.querySelector('.interactive-shopping__product-description');
-    const options = popup.querySelector('.interactive-shopping__options');
-    const message = popup.querySelector('.interactive-shopping__message');
-    const button = popup.querySelector('.interactive-shopping__add-button');
-
-    const currency = root.dataset.currency || 'INR';
-
-    title.textContent = product.title || '';
-
-    image.src = product.featured_image || '';
-    image.alt = product.title || '';
-
-    description.textContent = product.description
-      ? product.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-      : '';
-
-    options.replaceChildren();
-    message.textContent = '';
-
-    // Select first available variant.
-    activeVariant = product.variants.find(v => v.available)
-      || product.variants[0];
+  function updatePrice(elements) {
 
     if (!activeVariant) return;
 
-    // Generate product option dropdowns.
-    product.options.forEach((optionName, index) => {
+    elements.price.replaceChildren();
+
+    const currentPrice = document.createTextNode(
+      formatPrice(activeVariant.price)
+    );
+
+    elements.price.appendChild(currentPrice);
+
+    if (
+      activeVariant.compare_at_price &&
+      activeVariant.compare_at_price > activeVariant.price
+    ) {
+
+      const oldPrice = document.createElement('del');
+
+      oldPrice.textContent = formatPrice(
+        activeVariant.compare_at_price
+      );
+
+      elements.price.appendChild(oldPrice);
+
+    }
+
+  }
+
+
+  /* ---------------------------------
+     UPDATE SELECTED VARIANT
+  --------------------------------- */
+
+  function updateVariant(elements) {
+
+    const selectedOptions = activeProduct.options.map(
+      function (optionName, index) {
+
+        const select = elements.options.querySelector(
+          '[data-option-index="' + index + '"]'
+        );
+
+        return select
+          ? select.value
+          : activeVariant.options[index];
+
+      }
+    );
+
+    const matchingVariant = activeProduct.variants.find(
+      function (variant) {
+
+        return variant.options.every(
+          function (value, index) {
+            return value === selectedOptions[index];
+          }
+        );
+
+      }
+    );
+
+    if (!matchingVariant) {
+
+      activeVariant = null;
+
+      elements.price.textContent = 'Variant unavailable';
+
+      elements.button.disabled = true;
+
+      elements.button.querySelector('span:first-child').textContent =
+        'UNAVAILABLE';
+
+      return;
+
+    }
+
+    activeVariant = matchingVariant;
+
+    updatePrice(elements);
+
+    if (activeVariant.featured_image) {
+
+      elements.image.src = activeVariant.featured_image;
+
+    } else {
+
+      elements.image.src = activeProduct.featured_image || '';
+
+    }
+
+    elements.button.disabled = !activeVariant.available;
+
+    elements.button.querySelector('span:first-child').textContent =
+      activeVariant.available ? 'ADD TO CART' : 'SOLD OUT';
+
+  }
+
+
+  /* ---------------------------------
+     RENDER VARIANT OPTIONS
+  --------------------------------- */
+
+  function renderOptions(product, elements) {
+
+    elements.options.replaceChildren();
+
+    product.options.forEach(function (optionName, index) {
+
       const values = [
         ...new Set(
-          product.variants.map(variant => variant.options[index])
+          product.variants.map(function (variant) {
+            return variant.options[index];
+          })
         )
       ];
 
-      // Hide Shopify's default variant option.
+      // Hide default Shopify variant.
       if (
         optionName === 'Title' &&
         values.length === 1 &&
@@ -458,214 +694,383 @@
       }
 
       const wrapper = document.createElement('div');
+
       wrapper.className = 'interactive-shopping__option';
 
       const label = document.createElement('label');
+
       label.textContent = optionName;
 
       const select = document.createElement('select');
 
-      values.forEach(value => {
+      select.dataset.optionIndex = index;
+
+      values.forEach(function (value) {
+
         const option = document.createElement('option');
+
         option.value = value;
+
         option.textContent = value;
+
         select.appendChild(option);
+
       });
 
       select.value = activeVariant.options[index];
 
-      select.dataset.optionIndex = index;
+      select.addEventListener('change', function () {
+
+        updateVariant(elements);
+
+      });
 
       wrapper.append(label, select);
-      options.appendChild(wrapper);
+
+      elements.options.appendChild(wrapper);
+
     });
 
-    function updateSelectedVariant() {
-      const selectedOptions = Array.from(
-        options.querySelectorAll('select')
-      ).sort((a, b) => {
-        return Number(a.dataset.optionIndex) -
-          Number(b.dataset.optionIndex);
-      });
+    updateVariant(elements);
 
-      const values = product.options.map((option, index) => {
-        const select = Array.from(
-          options.querySelectorAll('select')
-        ).find(el => Number(el.dataset.optionIndex) === index);
+  }
 
-        return select ? select.value : activeVariant.options[index];
-      });
 
-      const matchingVariant = product.variants.find(variant =>
-        variant.options.every((value, index) => value === values[index])
-      );
+  /* ---------------------------------
+     OPEN POPUP
+  --------------------------------- */
 
-      if (!matchingVariant) {
-        activeVariant = null;
-        price.textContent = 'Variant unavailable';
-        button.disabled = true;
-        return;
-      }
+  function openPopup(root, product, trigger) {
 
-      activeVariant = matchingVariant;
+    if (
+      !product ||
+      !Array.isArray(product.variants) ||
+      !Array.isArray(product.options) ||
+      product.variants.length === 0
+    ) {
 
-      price.textContent = formatPrice(
-        activeVariant.price,
-        currency
-      );
+      console.error('Invalid Shopify product data:', product);
 
-      if (
-        activeVariant.compare_at_price &&
-        activeVariant.compare_at_price > activeVariant.price
-      ) {
-        const oldPrice = document.createElement('del');
-        oldPrice.textContent = formatPrice(
-          activeVariant.compare_at_price,
-          currency
-        );
-        price.appendChild(oldPrice);
-      }
+      return;
 
-      button.disabled = !activeVariant.available;
-
-      button.querySelector('span:first-child').textContent =
-        activeVariant.available ? 'ADD TO CART' : 'SOLD OUT';
     }
 
-    options.querySelectorAll('select').forEach(select => {
-      select.addEventListener('change', updateSelectedVariant);
-    });
+    activeRoot = root;
 
-    updateSelectedVariant();
+    activeProduct = product;
 
-    popup.classList.add('is-open');
-    popup.setAttribute('aria-hidden', 'false');
+    previousFocus = trigger;
+
+    const elements = getElements(root);
+
+    // Select first available variant.
+    activeVariant = product.variants.find(
+      function (variant) {
+        return variant.available;
+      }
+    ) || product.variants[0];
+
+    if (!activeVariant) return;
+
+    // Image.
+    elements.image.src = product.featured_image || '';
+
+    elements.image.alt = product.title || '';
+
+    // Title.
+    elements.title.textContent = product.title || '';
+
+    // Description.
+    const descriptionElement = document.createElement('div');
+
+    descriptionElement.innerHTML = product.description || '';
+
+    elements.description.textContent =
+      descriptionElement.textContent || '';
+
+    // Reset message.
+    elements.message.textContent = '';
+
+    // Render variants.
+    renderOptions(product, elements);
+
+    // Display popup.
+    elements.popup.classList.add('is-open');
+
+    elements.popup.setAttribute('aria-hidden', 'false');
 
     document.body.style.overflow = 'hidden';
 
-    popup.querySelector('.interactive-shopping__close').focus();
+    elements.close.focus();
+
+    console.log('Popup opened:', product.title);
+
   }
 
+
+  /* ---------------------------------
+     CLOSE POPUP
+  --------------------------------- */
+
   function closePopup() {
+
     if (!activeRoot) return;
 
-    const popup = activeRoot.querySelector(
-      '.interactive-shopping__overlay'
-    );
+    const elements = getElements(activeRoot);
 
-    popup.classList.remove('is-open');
-    popup.setAttribute('aria-hidden', 'true');
+    elements.popup.classList.remove('is-open');
+
+    elements.popup.setAttribute('aria-hidden', 'true');
 
     document.body.style.overflow = '';
 
-    if (previousFocus && previousFocus.isConnected) {
+    if (
+      previousFocus &&
+      previousFocus.isConnected
+    ) {
+
       previousFocus.focus();
+
     }
 
     activeRoot = null;
+
+    activeProduct = null;
+
     activeVariant = null;
+
+    previousFocus = null;
+
   }
 
-  // Handle hotspot clicks, including dynamically loaded sections.
+
+  /* ---------------------------------
+     HOTSPOT CLICK
+  --------------------------------- */
+
   document.addEventListener('click', function (event) {
-    const trigger = event.target.closest('[data-product-trigger]');
+
+    const trigger = event.target.closest(
+      '[data-product-trigger]'
+    );
 
     if (trigger) {
+
       const root = trigger.closest('.interactive-shopping');
 
       if (!root) return;
 
-      const productScript = root.querySelector(
-        '#' + CSS.escape(trigger.dataset.productJson)
-      );
+      const productId = trigger.dataset.productJson;
 
-      if (!productScript) {
-        console.error('Product JSON not found.');
+      // Find JSON using document ID.
+      const productScript = document.getElementById(productId);
+
+      if (
+        !productScript ||
+        !root.contains(productScript)
+      ) {
+
+        console.error(
+          'Product JSON not found:',
+          productId
+        );
+
         return;
+
       }
 
       try {
-        const product = JSON.parse(productScript.textContent);
+
+        const product = JSON.parse(
+          productScript.textContent.trim()
+        );
+
+        console.log('Product JSON:', product);
+
         openPopup(root, product, trigger);
+
       } catch (error) {
-        console.error('Product JSON parsing failed:', error);
+
+        console.error(
+          'Product JSON parsing failed:',
+          error
+        );
+
       }
 
       return;
+
     }
 
+
+    // Close button or backdrop.
     if (
       activeRoot &&
-      event.target.closest('[data-popup-close]') &&
-      activeRoot.contains(event.target)
+      event.target.closest('[data-popup-close]')
     ) {
+
       closePopup();
+
     }
+
   });
 
-  // Close popup using Escape.
+
+  /* ---------------------------------
+     ESCAPE KEY
+  --------------------------------- */
+
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && activeRoot) {
+
+    if (
+      event.key === 'Escape' &&
+      activeRoot
+    ) {
+
       closePopup();
+
     }
+
   });
 
-  // AJAX Add to Cart.
-  document.addEventListener('submit', async function (event) {
-    const form = event.target.closest('.interactive-shopping__form');
 
-    if (!form || !activeRoot || !activeVariant) return;
+  /* ---------------------------------
+     ADD TO CART
+  --------------------------------- */
+
+  document.addEventListener('submit', async function (event) {
+
+    const form = event.target.closest(
+      '.interactive-shopping__form'
+    );
+
+    if (
+      !form ||
+      !activeRoot ||
+      !activeVariant
+    ) {
+      return;
+    }
+
+    const elements = getElements(activeRoot);
+
+    if (form !== elements.form) return;
 
     event.preventDefault();
 
-    const button = form.querySelector('.interactive-shopping__add-button');
-    const message = form.querySelector('.interactive-shopping__message');
-
     if (!activeVariant.available) return;
 
-    button.disabled = true;
-    message.textContent = 'Adding to cart...';
+    elements.button.disabled = true;
+
+    elements.message.textContent = 'Adding product to cart...';
+
+    // Store variant before asynchronous request.
+    const variantId = activeVariant.id;
 
     try {
+
       const response = await fetch(
         (window.Shopify?.routes?.root || '/') + 'cart/add.js',
         {
           method: 'POST',
+
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
+
           body: JSON.stringify({
-            id: activeVariant.id,
+            id: variantId,
             quantity: 1
           })
+
         }
       );
 
       const result = await response.json();
 
       if (!response.ok) {
+
         throw new Error(
-          result.description || result.message || 'Unable to add product.'
+          result.description ||
+          result.message ||
+          'Unable to add product to cart.'
         );
+
       }
 
-      message.textContent = 'Product added successfully!';
+      elements.message.textContent =
+        'Product successfully added to cart!';
+
+      console.log('Cart response:', result);
+
+      // Notify compatible theme cart listeners.
+      document.dispatchEvent(
+        new CustomEvent('cart:refresh', {
+          bubbles: true
+        })
+      );
 
       document.dispatchEvent(
-        new CustomEvent('cart:refresh', { bubbles: true })
+        new CustomEvent('cart:updated', {
+          bubbles: true,
+          detail: {
+            product: result
+          }
+        })
       );
 
     } catch (error) {
-      message.textContent = error.message;
+
+      console.error('Add to cart error:', error);
+
+      elements.message.textContent = error.message;
 
     } finally {
-      button.disabled = !activeVariant || !activeVariant.available;
+
+      if (activeRoot) {
+
+        elements.button.disabled =
+          !activeVariant || !activeVariant.available;
+
+      }
+
     }
+
   });
 
+
+  /* ---------------------------------
+     THEME EDITOR SUPPORT
+  --------------------------------- */
+
+  document.addEventListener(
+    'shopify:section:unload',
+    function (event) {
+
+      if (
+        activeRoot &&
+        activeRoot.dataset.sectionId === event.detail.sectionId
+      ) {
+
+        document.body.style.overflow = '';
+
+        activeRoot = null;
+
+        activeProduct = null;
+
+        activeVariant = null;
+
+      }
+
+    }
+  );
+
+
 })();
+
 </script>
+
 
 {% schema %}
 {
