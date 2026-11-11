@@ -16,41 +16,61 @@
 
   <div class="interactive-shopping__grid">
     {% for block in section.blocks %}
-      
-        {% assign product = block.settings.product %}
+      {% assign product = block.settings.product %}
+      {% assign hotspot_image = block.settings.image %}
+
+      <div
+        class="interactive-shopping__item"
+        {{ block.shopify_attributes }}
+      >
+        {% if hotspot_image != blank %}
+          {{
+            hotspot_image
+            | image_url: width: 1200
+            | image_tag:
+              loading: 'lazy',
+              class: 'interactive-shopping__image',
+              alt: hotspot_image.alt
+          }}
+        {% elsif product != blank and product.featured_image != blank %}
+          {{
+            product.featured_image
+            | image_url: width: 1200
+            | image_tag:
+              loading: 'lazy',
+              class: 'interactive-shopping__image',
+              alt: product.title
+          }}
+        {% else %}
+          {{ 'product-1' | placeholder_svg_tag: 'interactive-shopping__placeholder' }}
+        {% endif %}
 
         {% if product != blank %}
+          <button
+            type="button"
+            class="interactive-shopping__hotspot"
+            style="
+              left: {{ block.settings.hotspot_x }}%;
+              top: {{ block.settings.hotspot_y }}%;
+            "
+            aria-label="View {{ product.title | escape }}"
+            aria-haspopup="dialog"
+            aria-controls="ShoppingPopup-{{ section.id }}"
+            data-product-trigger
+            data-product-json="ProductData-{{ section.id }}-{{ block.id }}"
+          >
+            <span>+</span>
+          </button>
 
-        <script
+          <script
             type="application/json"
             id="ProductData-{{ section.id }}-{{ block.id }}"
             data-product-data
-        >
-            {
-            "id": {{ product.id | json }},
-            "title": {{ product.title | json }},
-            "handle": {{ product.handle | json }},
-            "description": {{ product.description | json }},
-            "featured_image": {{ product.featured_image | image_url: width: 800 | json }},
-            "options": {{ product.options | json }},
-            "variants": [
-                {% for variant in product.variants %}
-                {
-                    "id": {{ variant.id | json }},
-                    "title": {{ variant.title | json }},
-                    "available": {{ variant.available | json }},
-                    "price": {{ variant.price | json }},
-                    "compare_at_price": {{ variant.compare_at_price | json }},
-                    "options": {{ variant.options | json }},
-                    "featured_image": {{ variant.featured_image | image_url: width: 800 | json }}
-                }{% unless forloop.last %},{% endunless %}
-                {% endfor %}
-            ]
-            }
-        </script>
-
+          >
+            {{ product | json }}
+          </script>
         {% endif %}
-
+      </div>
     {% endfor %}
   </div>
 
