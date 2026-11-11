@@ -460,40 +460,59 @@
       selectedVariant.available ? 'ADD TO CART' : 'SOLD OUT';
   }
 
-  function renderOptions(product) {
-    optionsContainer.replaceChildren();
+  
+function renderOptions(product) {
+  optionsContainer.replaceChildren();
 
-    product.options.forEach((option, index) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'interactive-shopping__option';
+  const initialVariant = getAvailableVariant(product.variants);
 
-      const label = document.createElement('label');
-      label.textContent = option.name;
-      label.htmlFor = 'ShoppingOption-{{ section.id }}-' + index;
+  product.options.forEach((option, index) => {
+    const values = [
+      ...new Set(
+        product.variants.map(variant => variant.options[index])
+      )
+    ];
 
-      const select = document.createElement('select');
-      select.id = label.htmlFor;
+    // Hide the default variant selector.
+    if (
+      product.options.length === 1 &&
+      option === 'Title' &&
+      values.length === 1 &&
+      values[0] === 'Default Title'
+    ) {
+      return;
+    }
 
-      option.values.forEach(value => {
-        const optionElement = document.createElement('option');
-        optionElement.value = value;
-        optionElement.textContent = value;
-        select.appendChild(optionElement);
-      });
+    const wrapper = document.createElement('div');
+    wrapper.className = 'interactive-shopping__option';
 
-      const initialVariant = getAvailableVariant(product.variants);
-      if (initialVariant && initialVariant.options[index]) {
-        select.value = initialVariant.options[index];
-      }
+    const label = document.createElement('label');
+    label.textContent = option;
+    label.htmlFor = 'ShoppingOption-{{ section.id }}-' + index;
 
-      select.addEventListener('change', updateVariant);
+    const select = document.createElement('select');
+    select.id = label.htmlFor;
 
-      wrapper.append(label, select);
-      optionsContainer.appendChild(wrapper);
+    values.forEach(value => {
+      const optionElement = document.createElement('option');
+      optionElement.value = value;
+      optionElement.textContent = value;
+      select.appendChild(optionElement);
     });
 
-    updateVariant();
-  }
+    if (initialVariant) {
+      select.value = initialVariant.options[index];
+    }
+
+    select.addEventListener('change', updateVariant);
+
+    wrapper.append(label, select);
+    optionsContainer.appendChild(wrapper);
+  });
+
+  updateVariant();
+}
+
 
   function openPopup(productData) {
     currentProduct = productData;
