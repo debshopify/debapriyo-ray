@@ -343,35 +343,53 @@
 
   /* COLOR SWATCHES */
   #InteractiveShopping-{{ section.id }} .interactive-shopping__swatches {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
 
-  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch {
-    width: 50%;
-    height: 30px;
-    min-width: 50%;
-    padding: 0;
-    border: 2px solid #ddd;
-    cursor: pointer;
-    transition: transform .2s ease, outline .2s ease;
-  }
+#InteractiveShopping-{{ section.id }} .interactive-shopping__swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 100px;
+  min-height: 42px;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  transition: border-color .2s ease;
+}
 
-  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:hover {
-    transform: scale(1.1);
-  }
+#InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:hover {
+  border-color: #777;
+}
 
-  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch.is-selected {
-    border: 2px solid #111;
-    outline: 1px solid #111;
-    outline-offset: 3px;
-  }
+#InteractiveShopping-{{ section.id }} .interactive-shopping__swatch.is-selected {
+  border: 2px solid #111;
+}
 
-  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:focus-visible {
-    outline: 2px solid #111;
-    outline-offset: 4px;
-  }
+#InteractiveShopping-{{ section.id }} .interactive-shopping__swatch-color {
+  display: block;
+  flex: 0 0 23px;
+  width: 23px;
+  height: 23px;
+  border: 1px solid rgba(0, 0, 0, .15);
+  border-radius: 50%;
+}
+
+#InteractiveShopping-{{ section.id }} .interactive-shopping__swatch-name {
+  font-size: 13px;
+  line-height: 1.3;
+  text-transform: capitalize;
+}
+
+#InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 3px;
+}
 
   /* ADD TO CART */
   #InteractiveShopping-{{ section.id }} .interactive-shopping__add-button {
