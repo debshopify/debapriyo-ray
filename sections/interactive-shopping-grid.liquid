@@ -455,6 +455,51 @@
   }
 
 
+  /* COLOR SWATCHES */
+
+    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    }
+
+    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    padding: 0;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: border-color .2s ease, transform .2s ease;
+    }
+
+    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:hover {
+    transform: scale(1.1);
+    }
+
+    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch.is-selected {
+    border: 2px solid #111;
+    outline: 1px solid #111;
+    outline-offset: 3px;
+    }
+
+    #InteractiveShopping-{{ section.id }} .interactive-shopping__hidden-select {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    }
+
+
   /* MOBILE */
 
   @media (max-width: 749px) {
@@ -666,74 +711,179 @@
   }
 
 
+  function getSwatchColor(colorName) {
+    const colors = {
+        black: '#000000',
+        white: '#ffffff',
+        red: '#ff0000',
+        blue: '#0000ff',
+        green: '#008000',
+        yellow: '#ffff00',
+        orange: '#ffa500',
+        pink: '#ffc0cb',
+        purple: '#800080',
+        violet: '#8f00ff',
+        brown: '#8b4513',
+        grey: '#808080',
+        gray: '#808080',
+        silver: '#c0c0c0',
+        gold: '#d4af37',
+        beige: '#f5f5dc',
+        cream: '#fffdd0',
+        navy: '#000080',
+        maroon: '#800000',
+        olive: '#808000',
+        teal: '#008080',
+        coral: '#ff7f50',
+        lavender: '#e6e6fa',
+        charcoal: '#36454f',
+        ivory: '#fffff0'
+    };
+
+    const normalized = colorName.trim().toLowerCase();
+
+    // Use a valid CSS color directly, including hex and rgb values.
+    if (
+        /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(normalized) ||
+        /^rgba?\(/i.test(normalized) ||
+        /^hsla?\(/i.test(normalized)
+    ) {
+        return normalized;
+    }
+
+    return colors[normalized] || '#cccccc';
+    }
+
   /* ---------------------------------
      RENDER VARIANT OPTIONS
   --------------------------------- */
 
-  function renderOptions(product, elements) {
-
+    function renderOptions(product, elements) {
     elements.options.replaceChildren();
 
     product.options.forEach(function (optionName, index) {
-
-      const values = [
+        const values = [
         ...new Set(
-          product.variants.map(function (variant) {
+            product.variants.map(function (variant) {
             return variant.options[index];
-          })
+            })
         )
-      ];
+        ];
 
-      // Hide default Shopify variant.
-      if (
+        // Hide Shopify's default variant option.
+        if (
         optionName === 'Title' &&
         values.length === 1 &&
         values[0] === 'Default Title'
-      ) {
+        ) {
         return;
-      }
+        }
 
-      const wrapper = document.createElement('div');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'interactive-shopping__option';
 
-      wrapper.className = 'interactive-shopping__option';
+        const label = document.createElement('label');
+        label.textContent = optionName;
 
-      const label = document.createElement('label');
+        wrapper.appendChild(label);
 
-      label.textContent = optionName;
+        // COLOR SWATCHES
+        if (optionName.toLowerCase() === 'color') {
+        const swatchContainer = document.createElement('div');
+        swatchContainer.className =
+            'interactive-shopping__swatches';
 
-      const select = document.createElement('select');
+        values.forEach(function (value) {
+            const swatch = document.createElement('button');
 
-      select.dataset.optionIndex = index;
+            swatch.type = 'button';
+            swatch.className =
+            'interactive-shopping__swatch';
 
-      values.forEach(function (value) {
+            swatch.dataset.optionIndex = index;
+            swatch.dataset.optionValue = value;
 
-        const option = document.createElement('option');
+            swatch.style.backgroundColor = getSwatchColor(value);
 
-        option.value = value;
+            swatch.setAttribute('aria-label', value);
+            swatch.setAttribute('title', value);
 
-        option.textContent = value;
+            if (activeVariant.options[index] === value) {
+            swatch.classList.add('is-selected');
+            }
 
-        select.appendChild(option);
+            swatch.addEventListener('click', function () {
+            const currentSelect = elements.options.querySelector(
+                '[data-option-index="' + index + '"]'
+            );
 
-      });
+            // Store selection on a hidden select so updateVariant
+            // can continue using the existing variant matching logic.
+            if (currentSelect) {
+                currentSelect.value = value;
+            }
 
-      select.value = activeVariant.options[index];
+            swatchContainer
+                .querySelectorAll('.interactive-shopping__swatch')
+                .forEach(function (item) {
+                item.classList.toggle(
+                    'is-selected',
+                    item.dataset.optionValue === value
+                );
+                });
 
-      select.addEventListener('change', function () {
+            updateVariant(elements);
+            });
 
-        updateVariant(elements);
+            swatchContainer.appendChild(swatch);
+        });
 
-      });
+        // Hidden select maintains compatibility with updateVariant().
+        const hiddenSelect = document.createElement('select');
+        hiddenSelect.dataset.optionIndex = index;
+        hiddenSelect.className =
+            'interactive-shopping__hidden-select';
+        hiddenSelect.setAttribute('aria-hidden', 'true');
+        hiddenSelect.tabIndex = -1;
 
-      wrapper.append(label, select);
+        values.forEach(function (value) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            hiddenSelect.appendChild(option);
+        });
 
-      elements.options.appendChild(wrapper);
+        hiddenSelect.value = activeVariant.options[index];
 
+        wrapper.append(swatchContainer, hiddenSelect);
+
+        } else {
+        // NORMAL DROPDOWN FOR OTHER OPTIONS
+        const select = document.createElement('select');
+
+        select.dataset.optionIndex = index;
+
+        values.forEach(function (value) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        });
+
+        select.value = activeVariant.options[index];
+
+        select.addEventListener('change', function () {
+            updateVariant(elements);
+        });
+
+        wrapper.appendChild(select);
+        }
+
+        elements.options.appendChild(wrapper);
     });
 
     updateVariant(elements);
-
-  }
+    }
 
 
   /* ---------------------------------
