@@ -15,20 +15,13 @@
     </h2>
   {% endif %}
 
-  <!-- IMAGE GRID -->
   <div class="interactive-shopping__grid">
-
     {% for block in section.blocks %}
       {% assign product = block.settings.product %}
       {% assign hotspot_image = block.settings.image %}
 
-      <div
-        class="interactive-shopping__item"
-        {{ block.shopify_attributes }}
-      >
-
+      <div class="interactive-shopping__item" {{ block.shopify_attributes }}>
         {% if hotspot_image != blank %}
-
           {{
             hotspot_image
             | image_url: width: 1200
@@ -37,9 +30,7 @@
               class: 'interactive-shopping__image',
               alt: hotspot_image.alt
           }}
-
         {% elsif product != blank and product.featured_image != blank %}
-
           {{
             product.featured_image
             | image_url: width: 1200
@@ -48,24 +39,15 @@
               class: 'interactive-shopping__image',
               alt: product.title
           }}
-
         {% else %}
-
           {{ 'product-1' | placeholder_svg_tag: 'interactive-shopping__placeholder' }}
-
         {% endif %}
 
-
         {% if product != blank %}
-
-          <!-- PRODUCT HOTSPOT -->
           <button
             type="button"
             class="interactive-shopping__hotspot"
-            style="
-              left: {{ block.settings.hotspot_x }}%;
-              top: {{ block.settings.hotspot_y }}%;
-            "
+            style="left: {{ block.settings.hotspot_x }}%; top: {{ block.settings.hotspot_y }}%;"
             aria-label="View {{ product.title | escape }}"
             aria-haspopup="dialog"
             aria-controls="ShoppingPopup-{{ section.id }}"
@@ -75,8 +57,6 @@
             <span>+</span>
           </button>
 
-
-          <!-- PRODUCT JSON -->
           <script
             type="application/json"
             id="ProductData-{{ section.id }}-{{ block.id }}"
@@ -104,15 +84,10 @@
               ]
             }
           </script>
-
         {% endif %}
-
       </div>
-
     {% endfor %}
-
   </div>
-
 
   <!-- PRODUCT POPUP -->
   <div
@@ -120,11 +95,7 @@
     id="ShoppingPopup-{{ section.id }}"
     aria-hidden="true"
   >
-
-    <div
-      class="interactive-shopping__backdrop"
-      data-popup-close
-    ></div>
+    <div class="interactive-shopping__backdrop" data-popup-close></div>
 
     <div
       class="interactive-shopping__modal"
@@ -133,7 +104,6 @@
       aria-labelledby="ShoppingProductTitle-{{ section.id }}"
       tabindex="-1"
     >
-
       <button
         type="button"
         class="interactive-shopping__close"
@@ -143,12 +113,8 @@
         &times;
       </button>
 
-
-      <!-- PRODUCT INFORMATION -->
       <div class="interactive-shopping__product">
-
         <div class="interactive-shopping__product-image-wrapper">
-
           <img
             class="interactive-shopping__product-image"
             src=""
@@ -156,12 +122,9 @@
             width="400"
             height="400"
           >
-
         </div>
 
-
         <div class="interactive-shopping__product-info">
-
           <h3
             class="interactive-shopping__product-title"
             id="ShoppingProductTitle-{{ section.id }}"
@@ -170,50 +133,27 @@
           <p class="interactive-shopping__product-price"></p>
 
           <div class="interactive-shopping__product-description"></div>
-
         </div>
-
       </div>
 
-
-      <!-- PRODUCT VARIANTS AND ADD TO CART -->
       <form class="interactive-shopping__form">
-
         <div class="interactive-shopping__options"></div>
 
-        <button
-          type="submit"
-          class="interactive-shopping__add-button"
-        >
+        <button type="submit" class="interactive-shopping__add-button">
           <span>ADD TO CART</span>
           <span class="interactive-shopping__arrow">&rarr;</span>
         </button>
 
-        <p
-          class="interactive-shopping__message"
-          role="status"
-          aria-live="polite"
-        ></p>
-
+        <p class="interactive-shopping__message" role="status" aria-live="polite"></p>
       </form>
-
     </div>
-
   </div>
-
 </section>
 
-
 <style>
-
-  /* SECTION */
-
   #InteractiveShopping-{{ section.id }} {
     width: 100%;
-    padding:
-      {{ section.settings.padding_top }}px
-      20px
-      {{ section.settings.padding_bottom }}px;
+    padding: {{ section.settings.padding_top }}px 20px {{ section.settings.padding_bottom }}px;
     box-sizing: border-box;
   }
 
@@ -226,22 +166,14 @@
     margin: 0 0 30px;
   }
 
-
   /* GRID */
-
   #InteractiveShopping-{{ section.id }} .interactive-shopping__grid {
     display: grid;
-    grid-template-columns: repeat(
-      {{ section.settings.columns }},
-      minmax(0, 1fr)
-    );
+    grid-template-columns: repeat({{ section.settings.columns }}, minmax(0, 1fr));
     gap: {{ section.settings.gap }}px;
     max-width: {{ section.settings.max_width }}px;
     margin: 0 auto;
   }
-
-
-  /* IMAGE */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__item {
     position: relative;
@@ -258,9 +190,7 @@
     object-fit: cover;
   }
 
-
   /* HOTSPOT */
-
   #InteractiveShopping-{{ section.id }} .interactive-shopping__hotspot {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -272,7 +202,6 @@
     background: #fff;
     color: #111;
     font-size: 21px;
-    font-weight: 400;
     line-height: 1;
     cursor: pointer;
     display: flex;
@@ -287,9 +216,7 @@
     transform: translate(-50%, -50%) scale(1.2);
   }
 
-
-  /* POPUP OVERLAY */
-
+  /* POPUP */
   #InteractiveShopping-{{ section.id }} .interactive-shopping__overlay {
     position: fixed;
     inset: 0;
@@ -313,9 +240,6 @@
     cursor: pointer;
   }
 
-
-  /* POPUP MODAL */
-
   #InteractiveShopping-{{ section.id }} .interactive-shopping__modal {
     position: relative;
     z-index: 2;
@@ -328,9 +252,6 @@
     color: #111;
     box-shadow: 0 10px 40px rgba(0, 0, 0, .15);
   }
-
-
-  /* CLOSE BUTTON */
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__close {
     position: absolute;
@@ -345,9 +266,7 @@
     padding: 5px;
   }
 
-
   /* PRODUCT DETAILS */
-
   #InteractiveShopping-{{ section.id }} .interactive-shopping__product {
     display: grid;
     grid-template-columns: 44% 1fr;
@@ -392,9 +311,7 @@
     overflow-wrap: anywhere;
   }
 
-
   /* VARIANT OPTIONS */
-
   #InteractiveShopping-{{ section.id }} .interactive-shopping__form {
     margin-top: 20px;
   }
@@ -406,7 +323,7 @@
   #InteractiveShopping-{{ section.id }} .interactive-shopping__option label {
     display: block;
     font-size: 15px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   #InteractiveShopping-{{ section.id }} .interactive-shopping__option select {
@@ -421,12 +338,44 @@
     cursor: pointer;
   }
 
+  /* COLOR SWATCHES */
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    padding: 0;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform .2s ease, outline .2s ease;
+  }
+
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:hover {
+    transform: scale(1.1);
+  }
+
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch.is-selected {
+    border: 2px solid #111;
+    outline: 1px solid #111;
+    outline-offset: 3px;
+  }
+
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:focus-visible {
+    outline: 2px solid #111;
+    outline-offset: 4px;
+  }
 
   /* ADD TO CART */
-
   #InteractiveShopping-{{ section.id }} .interactive-shopping__add-button {
     width: 100%;
-    height: 57px;
+    min-height: 57px;
     margin-top: 25px;
     padding: 0 22px;
     border: none;
@@ -454,56 +403,7 @@
     margin: 10px 0 0;
   }
 
-
-  /* COLOR SWATCHES */
-
-    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatches {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-    }
-
-    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch {
-    position: relative;
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    padding: 0;
-    border: 2px solid #ddd;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: border-color .2s ease, transform .2s ease;
-    }
-
-    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch:hover {
-    transform: scale(1.1);
-    }
-
-    #InteractiveShopping-{{ section.id }} .interactive-shopping__swatch.is-selected {
-    border: 2px solid #111;
-    outline: 1px solid #111;
-    outline-offset: 3px;
-    }
-
-    #InteractiveShopping-{{ section.id }} .interactive-shopping__hidden-select {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-    }
-
-
-  /* MOBILE */
-
   @media (max-width: 749px) {
-
     #InteractiveShopping-{{ section.id }} {
       padding-left: 12px;
       padding-right: 12px;
@@ -539,39 +439,22 @@
     #InteractiveShopping-{{ section.id }} .interactive-shopping__product-description {
       font-size: 13px;
     }
-
   }
-
 </style>
 
-
 <script>
-
 (function () {
-
-  /* ---------------------------------
-     GLOBAL INITIALIZATION
-  --------------------------------- */
-
+  // Prevent duplicate global event listeners.
   if (window.interactiveShoppingInitialized) return;
-
   window.interactiveShoppingInitialized = true;
 
   let activeRoot = null;
-  let activeVariant = null;
   let activeProduct = null;
+  let activeVariant = null;
   let previousFocus = null;
 
-
-  /* ---------------------------------
-     ELEMENTS
-  --------------------------------- */
-
   function getElements(root) {
-
-    const popup = root.querySelector(
-      '.interactive-shopping__overlay'
-    );
+    const popup = root.querySelector('.interactive-shopping__overlay');
 
     return {
       popup: popup,
@@ -585,16 +468,9 @@
       message: popup.querySelector('.interactive-shopping__message'),
       close: popup.querySelector('.interactive-shopping__close')
     };
-
   }
 
-
-  /* ---------------------------------
-     FORMAT PRICE
-  --------------------------------- */
-
   function formatPrice(cents) {
-
     const currency = activeRoot.dataset.currency || 'INR';
 
     return new Intl.NumberFormat(
@@ -603,504 +479,369 @@
         style: 'currency',
         currency: currency
       }
-    ).format(cents / 100);
-
+    ).format(Number(cents) / 100);
   }
 
-
-  /* ---------------------------------
-     UPDATE PRICE
-  --------------------------------- */
-
   function updatePrice(elements) {
-
     if (!activeVariant) return;
 
     elements.price.replaceChildren();
 
-    const currentPrice = document.createTextNode(
-      formatPrice(activeVariant.price)
+    elements.price.appendChild(
+      document.createTextNode(formatPrice(activeVariant.price))
     );
-
-    elements.price.appendChild(currentPrice);
 
     if (
       activeVariant.compare_at_price &&
-      activeVariant.compare_at_price > activeVariant.price
+      Number(activeVariant.compare_at_price) > Number(activeVariant.price)
     ) {
-
       const oldPrice = document.createElement('del');
-
-      oldPrice.textContent = formatPrice(
-        activeVariant.compare_at_price
-      );
-
+      oldPrice.textContent = formatPrice(activeVariant.compare_at_price);
       elements.price.appendChild(oldPrice);
-
     }
-
   }
 
+  function getSwatchColor(colorName) {
+    const colors = {
+      black: '#000000',
+      white: '#ffffff',
+      red: '#ff0000',
+      blue: '#0000ff',
+      green: '#008000',
+      yellow: '#ffff00',
+      orange: '#ffa500',
+      pink: '#ffc0cb',
+      purple: '#800080',
+      violet: '#8f00ff',
+      brown: '#8b4513',
+      grey: '#808080',
+      gray: '#808080',
+      silver: '#c0c0c0',
+      gold: '#d4af37',
+      beige: '#f5f5dc',
+      cream: '#fffdd0',
+      navy: '#000080',
+      maroon: '#800000',
+      olive: '#808000',
+      teal: '#008080',
+      coral: '#ff7f50',
+      lavender: '#e6e6fa',
+      charcoal: '#36454f',
+      ivory: '#fffff0'
+    };
 
-  /* ---------------------------------
-     UPDATE SELECTED VARIANT
-  --------------------------------- */
+    const normalized = String(colorName).trim().toLowerCase();
+
+    if (
+      /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(normalized) ||
+      /^rgba?\(/i.test(normalized) ||
+      /^hsla?\(/i.test(normalized)
+    ) {
+      return normalized;
+    }
+
+    return colors[normalized] || '#cccccc';
+  }
+
+  /*
+   * Resolve selected options using their original Shopify indexes.
+   * Display order does not change the underlying option indexes.
+   */
+  function getSelectedOptions(elements) {
+    const baseVariant = activeVariant || activeProduct.variants[0];
+
+    return activeProduct.options.map(function (optionName, index) {
+      const control = elements.options.querySelector(
+        '[data-option-index="' + index + '"]'
+      );
+
+      return control ? control.value : baseVariant.options[index];
+    });
+  }
 
   function updateVariant(elements) {
+    if (!activeProduct || !activeProduct.variants.length) return;
 
-    const selectedOptions = activeProduct.options.map(
-      function (optionName, index) {
+    const selectedOptions = getSelectedOptions(elements);
 
-        const select = elements.options.querySelector(
-          '[data-option-index="' + index + '"]'
+    const matchingVariant = activeProduct.variants.find(function (variant) {
+      return variant.options.every(function (value, index) {
+        return value === selectedOptions[index];
+      });
+    });
+
+    // Keep the swatch appearance synchronized with the user's selection.
+    elements.options.querySelectorAll('.interactive-shopping__swatch').forEach(
+      function (swatch) {
+        const index = Number(swatch.dataset.optionIndex);
+
+        swatch.classList.toggle(
+          'is-selected',
+          swatch.dataset.optionValue === selectedOptions[index]
         );
-
-        return select
-          ? select.value
-          : activeVariant.options[index];
-
-      }
-    );
-
-    const matchingVariant = activeProduct.variants.find(
-      function (variant) {
-
-        return variant.options.every(
-          function (value, index) {
-            return value === selectedOptions[index];
-          }
-        );
-
       }
     );
 
     if (!matchingVariant) {
-
       activeVariant = null;
 
-      elements.price.textContent = 'Variant unavailable';
-
+      elements.price.textContent = 'This combination is unavailable.';
       elements.button.disabled = true;
-
-      elements.button.querySelector('span:first-child').textContent =
-        'UNAVAILABLE';
+      elements.button.querySelector('span:first-child').textContent = 'UNAVAILABLE';
 
       return;
-
     }
 
     activeVariant = matchingVariant;
 
     updatePrice(elements);
 
-    if (activeVariant.featured_image) {
-
-      elements.image.src = activeVariant.featured_image;
-
-    } else {
-
-      elements.image.src = activeProduct.featured_image || '';
-
-    }
+    elements.image.src =
+      activeVariant.featured_image ||
+      activeProduct.featured_image ||
+      '';
 
     elements.button.disabled = !activeVariant.available;
 
     elements.button.querySelector('span:first-child').textContent =
       activeVariant.available ? 'ADD TO CART' : 'SOLD OUT';
-
   }
 
-
-  function getSwatchColor(colorName) {
-    const colors = {
-        black: '#000000',
-        white: '#ffffff',
-        red: '#ff0000',
-        blue: '#0000ff',
-        green: '#008000',
-        yellow: '#ffff00',
-        orange: '#ffa500',
-        pink: '#ffc0cb',
-        purple: '#800080',
-        violet: '#8f00ff',
-        brown: '#8b4513',
-        grey: '#808080',
-        gray: '#808080',
-        silver: '#c0c0c0',
-        gold: '#d4af37',
-        beige: '#f5f5dc',
-        cream: '#fffdd0',
-        navy: '#000080',
-        maroon: '#800000',
-        olive: '#808000',
-        teal: '#008080',
-        coral: '#ff7f50',
-        lavender: '#e6e6fa',
-        charcoal: '#36454f',
-        ivory: '#fffff0'
-    };
-
-    const normalized = colorName.trim().toLowerCase();
-
-    // Use a valid CSS color directly, including hex and rgb values.
-    if (
-        /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(normalized) ||
-        /^rgba?\(/i.test(normalized) ||
-        /^hsla?\(/i.test(normalized)
-    ) {
-        return normalized;
-    }
-
-    return colors[normalized] || '#cccccc';
-    }
-
-  /* ---------------------------------
-     RENDER VARIANT OPTIONS
-  --------------------------------- */
-
-    function renderOptions(product, elements) {
+  /*
+   * Render Color first, then Size, then any remaining options.
+   * The original Shopify index is retained in data-option-index.
+   */
+  function renderOptions(product, elements) {
     elements.options.replaceChildren();
 
-    product.options.forEach(function (optionName, index) {
-        const values = [
-        ...new Set(
-            product.variants.map(function (variant) {
-            return variant.options[index];
-            })
-        )
-        ];
+    const orderedOptions = product.options
+      .map(function (name, index) {
+        return { name: name, index: index };
+      })
+      .sort(function (a, b) {
+        function priority(name) {
+          const normalized = name.toLowerCase();
 
-        // Hide Shopify's default variant option.
-        if (
+          if (normalized === 'color' || normalized === 'colour') return 0;
+          if (normalized === 'size') return 1;
+
+          return 2;
+        }
+
+        return priority(a.name) - priority(b.name) || a.index - b.index;
+      });
+
+    orderedOptions.forEach(function (optionData) {
+      const optionName = optionData.name;
+      const index = optionData.index;
+
+      const values = [
+        ...new Set(
+          product.variants.map(function (variant) {
+            return variant.options[index];
+          })
+        )
+      ];
+
+      if (
         optionName === 'Title' &&
         values.length === 1 &&
         values[0] === 'Default Title'
-        ) {
+      ) {
         return;
-        }
+      }
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'interactive-shopping__option';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'interactive-shopping__option';
 
-        const label = document.createElement('label');
-        label.textContent = optionName;
+      const label = document.createElement('label');
+      label.textContent = optionName;
+      wrapper.appendChild(label);
 
-        wrapper.appendChild(label);
+      const isColor =
+        optionName.toLowerCase() === 'color' ||
+        optionName.toLowerCase() === 'colour';
 
-        // COLOR SWATCHES
-        if (optionName.toLowerCase() === 'color') {
+      if (isColor) {
         const swatchContainer = document.createElement('div');
-        swatchContainer.className =
-            'interactive-shopping__swatches';
+        swatchContainer.className = 'interactive-shopping__swatches';
 
-        values.forEach(function (value) {
-            const swatch = document.createElement('button');
-
-            swatch.type = 'button';
-            swatch.className =
-            'interactive-shopping__swatch';
-
-            swatch.dataset.optionIndex = index;
-            swatch.dataset.optionValue = value;
-
-            swatch.style.backgroundColor = getSwatchColor(value);
-
-            swatch.setAttribute('aria-label', value);
-            swatch.setAttribute('title', value);
-
-            if (activeVariant.options[index] === value) {
-            swatch.classList.add('is-selected');
-            }
-
-            swatch.addEventListener('click', function () {
-            const currentSelect = elements.options.querySelector(
-                '[data-option-index="' + index + '"]'
-            );
-
-            // Store selection on a hidden select so updateVariant
-            // can continue using the existing variant matching logic.
-            if (currentSelect) {
-                currentSelect.value = value;
-            }
-
-            swatchContainer
-                .querySelectorAll('.interactive-shopping__swatch')
-                .forEach(function (item) {
-                item.classList.toggle(
-                    'is-selected',
-                    item.dataset.optionValue === value
-                );
-                });
-
-            updateVariant(elements);
-            });
-
-            swatchContainer.appendChild(swatch);
-        });
-
-        // Hidden select maintains compatibility with updateVariant().
         const hiddenSelect = document.createElement('select');
         hiddenSelect.dataset.optionIndex = index;
-        hiddenSelect.className =
-            'interactive-shopping__hidden-select';
-        hiddenSelect.setAttribute('aria-hidden', 'true');
+        hiddenSelect.hidden = true;
         hiddenSelect.tabIndex = -1;
+        hiddenSelect.setAttribute('aria-hidden', 'true');
 
         values.forEach(function (value) {
-            const option = document.createElement('option');
-            option.value = value;
-            option.textContent = value;
-            hiddenSelect.appendChild(option);
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          hiddenSelect.appendChild(option);
+
+          const swatch = document.createElement('button');
+          swatch.type = 'button';
+          swatch.className = 'interactive-shopping__swatch';
+          swatch.dataset.optionIndex = index;
+          swatch.dataset.optionValue = value;
+          swatch.style.backgroundColor = getSwatchColor(value);
+          swatch.setAttribute('aria-label', value);
+          swatch.setAttribute('title', value);
+
+          swatch.addEventListener('click', function () {
+            hiddenSelect.value = value;
+            updateVariant(elements);
+          });
+
+          swatchContainer.appendChild(swatch);
         });
 
+        // Initialize from the already selected available variant.
         hiddenSelect.value = activeVariant.options[index];
 
         wrapper.append(swatchContainer, hiddenSelect);
-
-        } else {
-        // NORMAL DROPDOWN FOR OTHER OPTIONS
+      } else {
         const select = document.createElement('select');
-
         select.dataset.optionIndex = index;
 
         values.forEach(function (value) {
-            const option = document.createElement('option');
-            option.value = value;
-            option.textContent = value;
-            select.appendChild(option);
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          select.appendChild(option);
         });
 
         select.value = activeVariant.options[index];
 
         select.addEventListener('change', function () {
-            updateVariant(elements);
+          updateVariant(elements);
         });
 
         wrapper.appendChild(select);
-        }
+      }
 
-        elements.options.appendChild(wrapper);
+      elements.options.appendChild(wrapper);
     });
 
     updateVariant(elements);
-    }
-
-
-  /* ---------------------------------
-     OPEN POPUP
-  --------------------------------- */
+  }
 
   function openPopup(root, product, trigger) {
-
     if (
       !product ||
       !Array.isArray(product.variants) ||
       !Array.isArray(product.options) ||
       product.variants.length === 0
     ) {
-
       console.error('Invalid Shopify product data:', product);
-
       return;
+    }
 
+    // Find a real available variant before rendering any controls.
+    const firstAvailableVariant = product.variants.find(function (variant) {
+      return variant.available === true;
+    });
+
+    if (!firstAvailableVariant) {
+      console.warn('This product has no available variants:', product.title);
     }
 
     activeRoot = root;
-
     activeProduct = product;
-
+    activeVariant = firstAvailableVariant || product.variants[0];
     previousFocus = trigger;
 
     const elements = getElements(root);
 
-    // Select first available variant.
-    activeVariant = product.variants.find(
-      function (variant) {
-        return variant.available;
-      }
-    ) || product.variants[0];
-
-    if (!activeVariant) return;
-
-    // Image.
     elements.image.src = product.featured_image || '';
-
     elements.image.alt = product.title || '';
-
-    // Title.
     elements.title.textContent = product.title || '';
 
-    // Description.
+    // Render description as text, not executable HTML.
     const descriptionElement = document.createElement('div');
-
     descriptionElement.innerHTML = product.description || '';
+    elements.description.textContent = descriptionElement.textContent || '';
 
-    elements.description.textContent =
-      descriptionElement.textContent || '';
-
-    // Reset message.
     elements.message.textContent = '';
 
-    // Render variants.
     renderOptions(product, elements);
 
-    // Display popup.
     elements.popup.classList.add('is-open');
-
     elements.popup.setAttribute('aria-hidden', 'false');
 
     document.body.style.overflow = 'hidden';
-
     elements.close.focus();
 
     console.log('Popup opened:', product.title);
-
+    console.log('Initially selected variant:', activeVariant);
   }
 
-
-  /* ---------------------------------
-     CLOSE POPUP
-  --------------------------------- */
-
   function closePopup() {
-
     if (!activeRoot) return;
 
     const elements = getElements(activeRoot);
 
     elements.popup.classList.remove('is-open');
-
     elements.popup.setAttribute('aria-hidden', 'true');
 
     document.body.style.overflow = '';
 
-    if (
-      previousFocus &&
-      previousFocus.isConnected
-    ) {
-
+    if (previousFocus && previousFocus.isConnected) {
       previousFocus.focus();
-
     }
 
     activeRoot = null;
-
     activeProduct = null;
-
     activeVariant = null;
-
     previousFocus = null;
-
   }
 
-
-  /* ---------------------------------
-     HOTSPOT CLICK
-  --------------------------------- */
-
+  /* HOTSPOT AND CLOSE EVENTS */
   document.addEventListener('click', function (event) {
-
-    const trigger = event.target.closest(
-      '[data-product-trigger]'
-    );
+    const trigger = event.target.closest('[data-product-trigger]');
 
     if (trigger) {
-
       const root = trigger.closest('.interactive-shopping');
-
       if (!root) return;
 
-      const productId = trigger.dataset.productJson;
+      const productScript = document.getElementById(
+        trigger.dataset.productJson
+      );
 
-      // Find JSON using document ID.
-      const productScript = document.getElementById(productId);
-
-      if (
-        !productScript ||
-        !root.contains(productScript)
-      ) {
-
-        console.error(
-          'Product JSON not found:',
-          productId
-        );
-
+      if (!productScript || !root.contains(productScript)) {
+        console.error('Product JSON not found:', trigger.dataset.productJson);
         return;
-
       }
 
       try {
-
-        const product = JSON.parse(
-          productScript.textContent.trim()
-        );
-
-        console.log('Product JSON:', product);
-
+        const product = JSON.parse(productScript.textContent.trim());
         openPopup(root, product, trigger);
-
       } catch (error) {
-
-        console.error(
-          'Product JSON parsing failed:',
-          error
-        );
-
+        console.error('Product JSON parsing failed:', error);
       }
 
       return;
-
     }
 
-
-    // Close button or backdrop.
     if (
       activeRoot &&
       event.target.closest('[data-popup-close]')
     ) {
-
       closePopup();
-
     }
-
   });
 
-
-  /* ---------------------------------
-     ESCAPE KEY
-  --------------------------------- */
-
+  /* ESCAPE KEY */
   document.addEventListener('keydown', function (event) {
-
-    if (
-      event.key === 'Escape' &&
-      activeRoot
-    ) {
-
+    if (event.key === 'Escape' && activeRoot) {
       closePopup();
-
     }
-
   });
 
-
-  /* ---------------------------------
-     ADD TO CART
-  --------------------------------- */
-
+  /* ADD TO CART */
   document.addEventListener('submit', async function (event) {
+    const form = event.target.closest('.interactive-shopping__form');
 
-    const form = event.target.closest(
-      '.interactive-shopping__form'
-    );
-
-    if (
-      !form ||
-      !activeRoot ||
-      !activeVariant
-    ) {
-      return;
-    }
+    if (!form || !activeRoot) return;
 
     const elements = getElements(activeRoot);
 
@@ -1108,119 +849,87 @@
 
     event.preventDefault();
 
-    if (!activeVariant.available) return;
+    if (!activeVariant || !activeVariant.available) {
+      elements.message.textContent = 'Please select an available variant.';
+      return;
+    }
+
+    const variantId = activeVariant.id;
+    const buttonLabel = elements.button.querySelector('span:first-child');
 
     elements.button.disabled = true;
-
+    buttonLabel.textContent = 'ADDING...';
     elements.message.textContent = 'Adding product to cart...';
 
-    // Store variant before asynchronous request.
-    const variantId = activeVariant.id;
-
     try {
-
       const response = await fetch(
         (window.Shopify?.routes?.root || '/') + 'cart/add.js',
         {
           method: 'POST',
-
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-
           body: JSON.stringify({
             id: variantId,
             quantity: 1
           })
-
         }
       );
 
       const result = await response.json();
 
       if (!response.ok) {
-
         throw new Error(
           result.description ||
           result.message ||
           'Unable to add product to cart.'
         );
-
       }
 
-      elements.message.textContent =
-        'Product successfully added to cart!';
+      elements.message.textContent = 'Product successfully added to cart!';
 
-      console.log('Cart response:', result);
-
-      // Notify compatible theme cart listeners.
       document.dispatchEvent(
-        new CustomEvent('cart:refresh', {
-          bubbles: true
-        })
+        new CustomEvent('cart:refresh', { bubbles: true })
       );
 
       document.dispatchEvent(
         new CustomEvent('cart:updated', {
           bubbles: true,
-          detail: {
-            product: result
-          }
+          detail: { product: result }
         })
       );
 
+      buttonLabel.textContent = 'ADDED TO CART';
+
     } catch (error) {
-
       console.error('Add to cart error:', error);
-
       elements.message.textContent = error.message;
+      buttonLabel.textContent = 'ADD TO CART';
 
     } finally {
-
-      if (activeRoot) {
-
+      if (activeRoot === elements.popup.closest('.interactive-shopping')) {
         elements.button.disabled =
           !activeVariant || !activeVariant.available;
-
       }
-
     }
-
   });
 
-
-  /* ---------------------------------
-     THEME EDITOR SUPPORT
-  --------------------------------- */
-
-  document.addEventListener(
-    'shopify:section:unload',
-    function (event) {
-
-      if (
-        activeRoot &&
-        activeRoot.dataset.sectionId === event.detail.sectionId
-      ) {
-
-        document.body.style.overflow = '';
-
-        activeRoot = null;
-
-        activeProduct = null;
-
-        activeVariant = null;
-
-      }
-
+  /* SHOPIFY THEME EDITOR */
+  document.addEventListener('shopify:section:unload', function (event) {
+    if (
+      activeRoot &&
+      activeRoot.dataset.sectionId === event.detail.sectionId
+    ) {
+      document.body.style.overflow = '';
+      activeRoot = null;
+      activeProduct = null;
+      activeVariant = null;
+      previousFocus = null;
     }
-  );
-
-
+  });
 })();
-
 </script>
-
 
 {% schema %}
 {
