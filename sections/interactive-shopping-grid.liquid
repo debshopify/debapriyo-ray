@@ -144,7 +144,11 @@
           <span class="interactive-shopping__arrow">&rarr;</span>
         </button>
 
-        <p class="interactive-shopping__message" role="status" aria-live="polite"></p>
+        <p
+          class="interactive-shopping__message"
+          role="status"
+          aria-live="polite"
+        ></p>
       </form>
     </div>
   </div>
@@ -166,7 +170,6 @@
     margin: 0 0 30px;
   }
 
-  /* GRID */
   #InteractiveShopping-{{ section.id }} .interactive-shopping__grid {
     display: grid;
     grid-template-columns: repeat({{ section.settings.columns }}, minmax(0, 1fr));
@@ -326,7 +329,7 @@
     margin-bottom: 10px;
   }
 
-  #InteractiveShopping-{{ section.id }} .interactive-shopping__option select {
+  #InteractiveShopping-{{ section.id }} .interactive-shopping__option select:not([hidden]) {
     width: 100%;
     height: 51px;
     padding: 0 14px;
@@ -444,7 +447,9 @@
 
 <script>
 (function () {
-  // Prevent duplicate global event listeners.
+  /*
+   * Global guard prevents duplicate document-level event listeners.
+   */
   if (window.interactiveShoppingInitialized) return;
   window.interactiveShoppingInitialized = true;
 
@@ -455,6 +460,11 @@
 
   function getElements(root) {
     const popup = root.querySelector('.interactive-shopping__overlay');
+
+    if (!popup) {
+      console.error('Shopping popup element not found.');
+      return null;
+    }
 
     return {
       popup: popup,
@@ -470,8 +480,19 @@
     };
   }
 
+  function isVariantAvailable(variant) {
+    return Boolean(
+      variant &&
+      (
+        variant.available === true ||
+        variant.available === 'true' ||
+        variant.available === 1
+      )
+    );
+  }
+
   function formatPrice(cents) {
-    const currency = activeRoot.dataset.currency || 'INR';
+    const currency = activeRoot?.dataset.currency || 'INR';
 
     return new Intl.NumberFormat(
       document.documentElement.lang || 'en',
@@ -544,8 +565,7 @@
   }
 
   /*
-   * Resolve selected options using their original Shopify indexes.
-   * Display order does not change the underlying option indexes.
+   * Read selected option values using original Shopify option indexes.
    */
   function getSelectedOptions(elements) {
     const baseVariant = activeVariant || activeProduct.variants[0];
@@ -555,77 +575,92 @@
         '[data-option-index="' + index + '"]'
       );
 
-      return control ? control.value : baseVariant.options[index];
+      if (control) {
+        return control.value;
+      }
+
+      return baseVariant.options[index];
     });
   }
 
-  
-    function updateVariant(elements) {
+  /*
+   * Find the matching Shopify variant and update the popup.
+   */
+  function updateVariant(elements) {
     if (!activeProduct || !activeProduct.variants.length) return;
 
     const selectedOptions = getSelectedOptions(elements);
 
     const matchingVariant = activeProduct.variants.find(function (variant) {
-        return variant.options.every(function (value, index) {
+      return variant.options.every(function (value, index) {
         return String(value) === String(selectedOptions[index]);
-        });
+      });
     });
 
+    // Update selected swatch styling.
     elements.options.querySelectorAll(
-        '.interactive-shopping__swatch'
+      '.interactive-shopping__swatch'
     ).forEach(function (swatch) {
-        const index = Number(swatch.dataset.optionIndex);
+      const index = Number(swatch.dataset.optionIndex);
 
-        swatch.classList.toggle(
+      swatch.classList.toggle(
         'is-selected',
         swatch.dataset.optionValue === selectedOptions[index]
-        );
+      );
+
+      swatch.setAttribute(
+        'aria-pressed',
+        String(swatch.dataset.optionValue === selectedOptions[index])
+      );
     });
 
     if (!matchingVariant) {
-        activeVariant = null;
-        elements.price.textContent = 'This combination is unavailable.';
-        elements.button.disabled = true;
-        elements.button.querySelector('span:first-child').textContent =
+      activeVariant = null;
+
+      elements.price.textContent = 'This combination is unavailable.';
+      elements.button.disabled = true;
+      elements.button.querySelector('span:first-child').textContent =
         'UNAVAILABLE';
-        return;
+
+      return;
     }
 
     activeVariant = matchingVariant;
 
-    const isAvailable =
-        matchingVariant.available === true ||
-        matchingVariant.available === 'true' ||
-        matchingVariant.available === 1;
-
     updatePrice(elements);
 
     elements.image.src =
-        matchingVariant.featured_image ||
-        activeProduct.featured_image ||
-        '';
+      matchingVariant.featured_image ||
+      activeProduct.featured_image ||
+      '';
 
-    elements.button.disabled = !isAvailable;
+    elements.image.alt = activeProduct.title || '';
+
+    const available = isVariantAvailable(matchingVariant);
+
+    elements.button.disabled = !available;
 
     elements.button.querySelector('span:first-child').textContent =
-        isAvailable ? 'ADD TO CART' : 'SOLD OUT';
-    }
-
+      available ? 'ADD TO CART' : 'SOLD OUT';
+  }
 
   /*
-   * Render Color first, then Size, then any remaining options.
-   * The original Shopify index is retained in data-option-index.
+   * Display Color first, Size second, then all remaining options.
+   * The original option indexes are preserved for variant matching.
    */
   function renderOptions(product, elements) {
     elements.options.replaceChildren();
 
     const orderedOptions = product.options
       .map(function (name, index) {
-        return { name: name, index: index };
+        return {
+          name: name,
+          index: index
+        };
       })
       .sort(function (a, b) {
         function priority(name) {
-          const normalized = name.toLowerCase();
+          const normalized = String(name).toLowerCase();
 
           if (normalized === 'color' || normalized === 'colour') return 0;
           if (normalized === 'size') return 1;
@@ -648,6 +683,7 @@
         )
       ];
 
+      // Skip Shopify's default single option.
       if (
         optionName === 'Title' &&
         values.length === 1 &&
@@ -663,14 +699,17 @@
       label.textContent = optionName;
       wrapper.appendChild(label);
 
+      const normalizedName = String(optionName).toLowerCase();
+
       const isColor =
-        optionName.toLowerCase() === 'color' ||
-        optionName.toLowerCase() === 'colour';
+        normalizedName === 'color' ||
+        normalizedName === 'colour';
 
       if (isColor) {
         const swatchContainer = document.createElement('div');
         swatchContainer.className = 'interactive-shopping__swatches';
 
+        // Hidden select stores the actual Shopify option value.
         const hiddenSelect = document.createElement('select');
         hiddenSelect.dataset.optionIndex = index;
         hiddenSelect.hidden = true;
@@ -691,6 +730,7 @@
           swatch.style.backgroundColor = getSwatchColor(value);
           swatch.setAttribute('aria-label', value);
           swatch.setAttribute('title', value);
+          swatch.setAttribute('aria-pressed', 'false');
 
           swatch.addEventListener('click', function () {
             hiddenSelect.value = value;
@@ -700,7 +740,6 @@
           swatchContainer.appendChild(swatch);
         });
 
-        // Initialize from the already selected available variant.
         hiddenSelect.value = activeVariant.options[index];
 
         wrapper.append(swatchContainer, hiddenSelect);
@@ -727,30 +766,31 @@
       elements.options.appendChild(wrapper);
     });
 
+    // Initialize price, swatch selection and availability.
     updateVariant(elements);
   }
 
-  
-    function openPopup(root, product, trigger) {
+  /*
+   * Open popup.
+   */
+  function openPopup(root, product, trigger) {
     if (
-        !product ||
-        !Array.isArray(product.variants) ||
-        !Array.isArray(product.options) ||
-        product.variants.length === 0
+      !product ||
+      !Array.isArray(product.variants) ||
+      !Array.isArray(product.options) ||
+      product.variants.length === 0
     ) {
-        console.error('Invalid Shopify product data:', product);
-        return;
+      console.error('Invalid Shopify product data:', product);
+      return;
     }
 
-    // Find the first available variant.
-    const firstAvailableVariant = product.variants.find(function (variant) {
-        return variant.available === true ||
-            variant.available === 'true' ||
-            variant.available === 1;
-    });
+    const firstAvailableVariant = product.variants.find(
+      isVariantAvailable
+    );
 
-    // Fallback to the first variant if none is available.
-    const initialVariant = firstAvailableVariant || product.variants[0];
+    // If all variants are sold out, show the first one as sold out.
+    const initialVariant =
+      firstAvailableVariant || product.variants[0];
 
     activeRoot = root;
     activeProduct = product;
@@ -759,24 +799,33 @@
 
     const elements = getElements(root);
 
-    elements.image.src = initialVariant.featured_image ||
-                        product.featured_image || '';
+    if (!elements) return;
+
+    elements.image.src =
+      initialVariant.featured_image ||
+      product.featured_image ||
+      '';
 
     elements.image.alt = product.title || '';
     elements.title.textContent = product.title || '';
 
-    // Render description safely as text.
+    // Convert description HTML to plain text.
     const descriptionElement = document.createElement('div');
     descriptionElement.innerHTML = product.description || '';
-    elements.description.textContent = descriptionElement.textContent || '';
+
+    elements.description.textContent =
+      descriptionElement.textContent || '';
 
     elements.message.textContent = '';
 
-    // Render controls using the selected variant.
+    // This renders the controls and calls updateVariant(elements).
     renderOptions(product, elements);
 
-    // Update the selected variant, price, image and availability.
-    updateVariant(root);
+    /*
+     * IMPORTANT:
+     * Do not call updateVariant(root) here.
+     * renderOptions already calls updateVariant(elements).
+     */
 
     elements.popup.classList.add('is-open');
     elements.popup.setAttribute('aria-hidden', 'false');
@@ -785,22 +834,24 @@
     elements.close.focus();
 
     console.log('Popup opened:', product.title);
-    console.log('Available variants:', product.variants.filter(function (variant) {
-        return variant.available === true ||
-            variant.available === 'true' ||
-            variant.available === 1;
-    }));
+    console.log('Available variants:', product.variants.filter(
+      isVariantAvailable
+    ));
     console.log('Initially selected variant:', activeVariant);
-    }
+  }
 
-
+  /*
+   * Close popup.
+   */
   function closePopup() {
     if (!activeRoot) return;
 
     const elements = getElements(activeRoot);
 
-    elements.popup.classList.remove('is-open');
-    elements.popup.setAttribute('aria-hidden', 'true');
+    if (elements) {
+      elements.popup.classList.remove('is-open');
+      elements.popup.setAttribute('aria-hidden', 'true');
+    }
 
     document.body.style.overflow = '';
 
@@ -814,12 +865,19 @@
     previousFocus = null;
   }
 
-  /* HOTSPOT AND CLOSE EVENTS */
+  /*
+   * HOTSPOT AND CLOSE EVENTS
+   */
   document.addEventListener('click', function (event) {
-    const trigger = event.target.closest('[data-product-trigger]');
+    const target = event.target;
+
+    if (!(target instanceof Element)) return;
+
+    const trigger = target.closest('[data-product-trigger]');
 
     if (trigger) {
       const root = trigger.closest('.interactive-shopping');
+
       if (!root) return;
 
       const productScript = document.getElementById(
@@ -827,12 +885,16 @@
       );
 
       if (!productScript || !root.contains(productScript)) {
-        console.error('Product JSON not found:', trigger.dataset.productJson);
+        console.error(
+          'Product JSON not found:',
+          trigger.dataset.productJson
+        );
         return;
       }
 
       try {
         const product = JSON.parse(productScript.textContent.trim());
+
         openPopup(root, product, trigger);
       } catch (error) {
         console.error('Product JSON parsing failed:', error);
@@ -843,40 +905,43 @@
 
     if (
       activeRoot &&
-      event.target.closest('[data-popup-close]')
+      target.closest('[data-popup-close]')
     ) {
       closePopup();
     }
   });
 
-  /* ESCAPE KEY */
+  /*
+   * ESCAPE KEY
+   */
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && activeRoot) {
       closePopup();
     }
   });
 
-  /* ADD TO CART */
+  /*
+   * ADD TO CART
+   */
   document.addEventListener('submit', async function (event) {
-    const form = event.target.closest('.interactive-shopping__form');
+    const target = event.target;
+
+    if (!(target instanceof Element)) return;
+
+    const form = target.closest('.interactive-shopping__form');
 
     if (!form || !activeRoot) return;
 
-    const elements = getElements(activeRoot);
+    const rootAtSubmit = activeRoot;
+    const elements = getElements(rootAtSubmit);
 
-    if (form !== elements.form) return;
+    if (!elements || form !== elements.form) return;
 
     event.preventDefault();
 
-    if (
-    !activeVariant ||
-    !(
-        activeVariant.available === true ||
-        activeVariant.available === 'true' ||
-        activeVariant.available === 1
-    )
-    ) {
-      elements.message.textContent = 'Please select an available variant.';
+    if (!activeVariant || !isVariantAvailable(activeVariant)) {
+      elements.message.textContent =
+        'Please select an available variant.';
       return;
     }
 
@@ -913,7 +978,11 @@
         );
       }
 
-      elements.message.textContent = 'Product successfully added to cart!';
+      // Do not update a popup that has been closed or replaced.
+      if (activeRoot !== rootAtSubmit) return;
+
+      elements.message.textContent =
+        'Product successfully added to cart!';
 
       document.dispatchEvent(
         new CustomEvent('cart:refresh', { bubbles: true })
@@ -930,24 +999,30 @@
 
     } catch (error) {
       console.error('Add to cart error:', error);
-      elements.message.textContent = error.message;
-      buttonLabel.textContent = 'ADD TO CART';
+
+      if (activeRoot === rootAtSubmit) {
+        elements.message.textContent = error.message;
+        buttonLabel.textContent = 'ADD TO CART';
+      }
 
     } finally {
-      if (activeRoot === elements.popup.closest('.interactive-shopping')) {
+      if (activeRoot === rootAtSubmit) {
         elements.button.disabled =
-          !activeVariant || !activeVariant.available;
+          !activeVariant || !isVariantAvailable(activeVariant);
       }
     }
   });
 
-  /* SHOPIFY THEME EDITOR */
+  /*
+   * SHOPIFY THEME EDITOR
+   */
   document.addEventListener('shopify:section:unload', function (event) {
     if (
       activeRoot &&
       activeRoot.dataset.sectionId === event.detail.sectionId
     ) {
       document.body.style.overflow = '';
+
       activeRoot = null;
       activeProduct = null;
       activeVariant = null;
