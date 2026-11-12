@@ -568,33 +568,19 @@
    * Read selected option values using original Shopify option indexes.
    */
   
-    function getSelectedOptions(elements) {
+    
+function getSelectedOptions(elements) {
   const baseVariant = activeVariant || activeProduct.variants[0];
 
   return activeProduct.options.map(function (optionName, index) {
     const control = elements.options.querySelector(
-      '[data-option-index="' + index + '"]'
+      'select[data-option-index="' + index + '"]'
     );
 
-    if (!control) {
-      return baseVariant.options[index];
-    }
-
-    // For color swatches, read the selected swatch value
-    if (optionName.toLowerCase() === 'color' ||
-        optionName.toLowerCase() === 'colour') {
-      const selectedSwatch = elements.options.querySelector(
-        '[data-option-index="' + index + '"] .swatch-button.is-active'
-      );
-
-      if (selectedSwatch) {
-        return selectedSwatch.dataset.value;
-      }
-    }
-
-    return control.value || baseVariant.options[index];
+    return control ? control.value : baseVariant.options[index];
   });
 }
+
 
 
   /*
@@ -665,136 +651,161 @@ function updateVariant(elements) {
    * Display Color first, Size second, then all remaining options.
    * The original option indexes are preserved for variant matching.
    */
-  function renderOptions(product, elements) {
-    elements.options.replaceChildren();
+  
+function renderOptions(product, elements) {
+  elements.options.replaceChildren();
 
-    const orderedOptions = product.options
-      .map(function (name, index) {
-        return {
-          name: name,
-          index: index
-        };
-      })
-      .sort(function (a, b) {
-        function priority(name) {
-          const normalized = String(name).toLowerCase();
+  const orderedOptions = product.options
+    .map(function (name, index) {
+      return {
+        name: name,
+        index: index
+      };
+    })
+    .sort(function (a, b) {
+      function priority(name) {
+        const normalized = String(name).toLowerCase();
 
-          if (normalized === 'color' || normalized === 'colour') return 0;
-          if (normalized === 'size') return 1;
+        if (normalized === 'color' || normalized === 'colour') return 0;
+        if (normalized === 'size') return 1;
 
-          return 2;
-        }
-
-        return priority(a.name) - priority(b.name) || a.index - b.index;
-      });
-
-    orderedOptions.forEach(function (optionData) {
-      const optionName = optionData.name;
-      const index = optionData.index;
-
-      const values = [
-        ...new Set(
-          product.variants.map(function (variant) {
-            return variant.options[index];
-          })
-        )
-      ];
-
-      // Skip Shopify's default single option.
-      if (
-        optionName === 'Title' &&
-        values.length === 1 &&
-        values[0] === 'Default Title'
-      ) {
-        return;
+        return 2;
       }
 
-      const wrapper = document.createElement('div');
-      wrapper.className = 'interactive-shopping__option';
+      return priority(a.name) - priority(b.name) || a.index - b.index;
+    });
 
-      const label = document.createElement('label');
-      label.textContent = optionName;
-      wrapper.appendChild(label);
+  orderedOptions.forEach(function (optionData) {
+    const optionName = optionData.name;
+    const index = optionData.index;
 
-      const normalizedName = String(optionName).toLowerCase();
+    const values = [
+      ...new Set(
+        product.variants.map(function (variant) {
+          return variant.options[index];
+        })
+      )
+    ];
 
-      const isColor =
-        normalizedName === 'color' ||
-        normalizedName === 'colour';
+    // Skip Shopify's default single option.
+    if (
+      optionName === 'Title' &&
+      values.length === 1 &&
+      values[0] === 'Default Title'
+    ) {
+      return;
+    }
 
-      if (isColor) {
-        const swatchContainer = document.createElement('div');
-        swatchContainer.className = 'interactive-shopping__swatches';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'interactive-shopping__option';
 
-        // Hidden select stores the actual Shopify option value.
-        const hiddenSelect = document.createElement('select');
-        hiddenSelect.dataset.optionIndex = index;
-        hiddenSelect.hidden = true;
-        hiddenSelect.tabIndex = -1;
-        hiddenSelect.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('label');
+    label.textContent = optionName;
+    wrapper.appendChild(label);
 
-        values.forEach(function (value) {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = value;
-          hiddenSelect.appendChild(option);
+    const normalizedName = String(optionName).toLowerCase();
 
-          const swatch = document.createElement('button');
-          swatch.type = 'button';
-          swatch.className = 'interactive-shopping__swatch';
-          swatch.dataset.optionIndex = index;
-          swatch.dataset.optionValue = value;
-          swatch.style.backgroundColor = getSwatchColor(value);
-          swatch.setAttribute('aria-label', value);
-          swatch.setAttribute('title', value);
-          swatch.setAttribute('aria-pressed', 'false');
+    const isColor =
+      normalizedName === 'color' ||
+      normalizedName === 'colour';
 
-          swatchButton.addEventListener('click', function () {
-            const value = this.dataset.value;
+    if (isColor) {
+      const swatchContainer = document.createElement('div');
+      swatchContainer.className = 'interactive-shopping__swatches';
 
-            select.value = value;
+      // Hidden select stores the actual Shopify option value.
+      const hiddenSelect = document.createElement('select');
+      hiddenSelect.dataset.optionIndex = index;
+      hiddenSelect.hidden = true;
+      hiddenSelect.tabIndex = -1;
+      hiddenSelect.setAttribute('aria-hidden', 'true');
 
-            swatchContainer.querySelectorAll('.swatch-button').forEach(function (button) {
-                button.classList.remove('is-active');
+      values.forEach(function (value) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        hiddenSelect.appendChild(option);
+
+        const swatch = document.createElement('button');
+        swatch.type = 'button';
+        swatch.className = 'interactive-shopping__swatch';
+        swatch.dataset.optionIndex = index;
+        swatch.dataset.optionValue = value;
+        swatch.style.backgroundColor = getSwatchColor(value);
+        swatch.setAttribute('aria-label', value);
+        swatch.setAttribute('title', value);
+        swatch.setAttribute('aria-pressed', 'false');
+
+        // Handle swatch click.
+        swatch.addEventListener('click', function () {
+          const selectedValue = this.dataset.optionValue;
+
+          hiddenSelect.value = selectedValue;
+
+          // Update active swatch.
+          swatchContainer
+            .querySelectorAll('.interactive-shopping__swatch')
+            .forEach(function (button) {
+              button.classList.remove('is-active');
+              button.setAttribute('aria-pressed', 'false');
             });
 
-            this.classList.add('is-active');
+          this.classList.add('is-active');
+          this.setAttribute('aria-pressed', 'true');
 
-            updateVariant(elements);
-          });
-
-          swatchContainer.appendChild(swatch);
-        });
-
-        hiddenSelect.value = activeVariant.options[index];
-
-        wrapper.append(swatchContainer, hiddenSelect);
-      } else {
-        const select = document.createElement('select');
-        select.dataset.optionIndex = index;
-
-        values.forEach(function (value) {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = value;
-          select.appendChild(option);
-        });
-
-        select.value = activeVariant.options[index];
-
-        select.addEventListener('change', function () {
+          // Find matching Shopify variant.
           updateVariant(elements);
         });
 
-        wrapper.appendChild(select);
-      }
+        swatchContainer.appendChild(swatch);
+      });
 
-      elements.options.appendChild(wrapper);
-    });
+      // Set initial color from the active variant.
+      hiddenSelect.value = activeVariant.options[index];
 
-    // Initialize price, swatch selection and availability.
-    updateVariant(elements);
-  }
+      // Mark initially selected swatch.
+      swatchContainer
+        .querySelectorAll('.interactive-shopping__swatch')
+        .forEach(function (button) {
+          const isSelected =
+            button.dataset.optionValue === hiddenSelect.value;
+
+          button.classList.toggle('is-active', isSelected);
+          button.setAttribute(
+            'aria-pressed',
+            isSelected ? 'true' : 'false'
+          );
+        });
+
+      wrapper.append(swatchContainer, hiddenSelect);
+
+    } else {
+      const select = document.createElement('select');
+      select.dataset.optionIndex = index;
+
+      values.forEach(function (value) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+
+      select.value = activeVariant.options[index];
+
+      select.addEventListener('change', function () {
+        updateVariant(elements);
+      });
+
+      wrapper.appendChild(select);
+    }
+
+    elements.options.appendChild(wrapper);
+  });
+
+  // Initialize price, image, swatch selection and availability.
+  updateVariant(elements);
+}
+
 
   /*
    * Open popup.
