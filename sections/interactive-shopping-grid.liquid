@@ -725,55 +725,69 @@
     updateVariant(elements);
   }
 
-  function openPopup(root, product, trigger) {
-    if (
-      !product ||
-      !Array.isArray(product.variants) ||
-      !Array.isArray(product.options) ||
-      product.variants.length === 0
-    ) {
-      console.error('Invalid Shopify product data:', product);
-      return;
-    }
-
-    // Find a real available variant before rendering any controls.
-    const firstAvailableVariant = product.variants.find(function (variant) {
-      return variant.available === true;
-    });
-
-    if (!firstAvailableVariant) {
-      console.warn('This product has no available variants:', product.title);
-    }
-
-    activeRoot = root;
-    activeProduct = product;
-    activeVariant = firstAvailableVariant || product.variants[0];
-    previousFocus = trigger;
-
-    const elements = getElements(root);
-
-    elements.image.src = product.featured_image || '';
-    elements.image.alt = product.title || '';
-    elements.title.textContent = product.title || '';
-
-    // Render description as text, not executable HTML.
-    const descriptionElement = document.createElement('div');
-    descriptionElement.innerHTML = product.description || '';
-    elements.description.textContent = descriptionElement.textContent || '';
-
-    elements.message.textContent = '';
-
-    renderOptions(product, elements);
-
-    elements.popup.classList.add('is-open');
-    elements.popup.setAttribute('aria-hidden', 'false');
-
-    document.body.style.overflow = 'hidden';
-    elements.close.focus();
-
-    console.log('Popup opened:', product.title);
-    console.log('Initially selected variant:', activeVariant);
+  
+function openPopup(root, product, trigger) {
+  if (
+    !product ||
+    !Array.isArray(product.variants) ||
+    !Array.isArray(product.options) ||
+    product.variants.length === 0
+  ) {
+    console.error('Invalid Shopify product data:', product);
+    return;
   }
+
+  // Find the first available variant.
+  const firstAvailableVariant = product.variants.find(function (variant) {
+    return variant.available === true ||
+           variant.available === 'true' ||
+           variant.available === 1;
+  });
+
+  // Fallback to the first variant if none is available.
+  const initialVariant = firstAvailableVariant || product.variants[0];
+
+  activeRoot = root;
+  activeProduct = product;
+  activeVariant = initialVariant;
+  previousFocus = trigger;
+
+  const elements = getElements(root);
+
+  elements.image.src = initialVariant.featured_image ||
+                       product.featured_image || '';
+
+  elements.image.alt = product.title || '';
+  elements.title.textContent = product.title || '';
+
+  // Render description safely as text.
+  const descriptionElement = document.createElement('div');
+  descriptionElement.innerHTML = product.description || '';
+  elements.description.textContent = descriptionElement.textContent || '';
+
+  elements.message.textContent = '';
+
+  // Render controls using the selected variant.
+  renderOptions(product, elements);
+
+  // Update the selected variant, price, image and availability.
+  updateVariant(root);
+
+  elements.popup.classList.add('is-open');
+  elements.popup.setAttribute('aria-hidden', 'false');
+
+  document.body.style.overflow = 'hidden';
+  elements.close.focus();
+
+  console.log('Popup opened:', product.title);
+  console.log('Available variants:', product.variants.filter(function (variant) {
+    return variant.available === true ||
+           variant.available === 'true' ||
+           variant.available === 1;
+  }));
+  console.log('Initially selected variant:', activeVariant);
+}
+
 
   function closePopup() {
     if (!activeRoot) return;
