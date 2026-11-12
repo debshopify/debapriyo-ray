@@ -569,22 +569,32 @@
    */
   
     function getSelectedOptions(elements) {
-    const baseVariant = activeVariant || activeProduct.variants[0];
+  const baseVariant = activeVariant || activeProduct.variants[0];
 
-    const selectedOptions = activeProduct.options.map(function (optionName, index) {
-        const control = elements.options.querySelector(
-        '[data-option-index="' + index + '"]'
-        );
+  return activeProduct.options.map(function (optionName, index) {
+    const control = elements.options.querySelector(
+      '[data-option-index="' + index + '"]'
+    );
 
-        return control ? control.value : baseVariant.options[index];
-    });
-
-    console.log('Product option names:', activeProduct.options);
-    console.log('First variant options:', activeProduct.variants[0].options);
-    console.log('Selected options:', selectedOptions);
-
-    return selectedOptions;
+    if (!control) {
+      return baseVariant.options[index];
     }
+
+    // For color swatches, read the selected swatch value
+    if (optionName.toLowerCase() === 'color' ||
+        optionName.toLowerCase() === 'colour') {
+      const selectedSwatch = elements.options.querySelector(
+        '[data-option-index="' + index + '"] .swatch-button.is-active'
+      );
+
+      if (selectedSwatch) {
+        return selectedSwatch.dataset.value;
+      }
+    }
+
+    return control.value || baseVariant.options[index];
+  });
+}
 
 
   /*
@@ -739,8 +749,17 @@ function updateVariant(elements) {
           swatch.setAttribute('title', value);
           swatch.setAttribute('aria-pressed', 'false');
 
-          swatch.addEventListener('click', function () {
-            hiddenSelect.value = value;
+          swatchButton.addEventListener('click', function () {
+            const value = this.dataset.value;
+
+            select.value = value;
+
+            swatchContainer.querySelectorAll('.swatch-button').forEach(function (button) {
+                button.classList.remove('is-active');
+            });
+
+            this.classList.add('is-active');
+
             updateVariant(elements);
           });
 
