@@ -567,82 +567,89 @@
   /*
    * Read selected option values using original Shopify option indexes.
    */
-  function getSelectedOptions(elements) {
+  
+    function getSelectedOptions(elements) {
     const baseVariant = activeVariant || activeProduct.variants[0];
 
-    return activeProduct.options.map(function (optionName, index) {
-      const control = elements.options.querySelector(
+    const selectedOptions = activeProduct.options.map(function (optionName, index) {
+        const control = elements.options.querySelector(
         '[data-option-index="' + index + '"]'
-      );
+        );
 
-      if (control) {
-        return control.value;
-      }
-
-      return baseVariant.options[index];
+        return control ? control.value : baseVariant.options[index];
     });
-  }
+
+    console.log('Product option names:', activeProduct.options);
+    console.log('First variant options:', activeProduct.variants[0].options);
+    console.log('Selected options:', selectedOptions);
+
+    return selectedOptions;
+    }
+
 
   /*
    * Find the matching Shopify variant and update the popup.
    */
-  function updateVariant(elements) {
-    if (!activeProduct || !activeProduct.variants.length) return;
+  
+function updateVariant(elements) {
+  if (!activeProduct || !activeProduct.variants.length) return;
 
-    const selectedOptions = getSelectedOptions(elements);
+  const selectedOptions = getSelectedOptions(elements);
 
-    const matchingVariant = activeProduct.variants.find(function (variant) {
-      return variant.options.every(function (value, index) {
-        return String(value) === String(selectedOptions[index]);
-      });
-    });
+  console.log('Matching against variants...');
 
-    // Update selected swatch styling.
-    elements.options.querySelectorAll(
-      '.interactive-shopping__swatch'
-    ).forEach(function (swatch) {
-      const index = Number(swatch.dataset.optionIndex);
+  const matchingVariant = activeProduct.variants.find(function (variant) {
+    const variantOptions = variant.options || [];
 
-      swatch.classList.toggle(
-        'is-selected',
-        swatch.dataset.optionValue === selectedOptions[index]
-      );
+    return (
+      variantOptions.length === selectedOptions.length &&
+      variantOptions.every(function (value, index) {
+        return String(value).trim() ===
+               String(selectedOptions[index]).trim();
+      })
+    );
+  });
 
-      swatch.setAttribute(
-        'aria-pressed',
-        String(swatch.dataset.optionValue === selectedOptions[index])
-      );
-    });
+  console.log('Matching variant:', matchingVariant);
 
-    if (!matchingVariant) {
-      activeVariant = null;
+  elements.options.querySelectorAll(
+    '.interactive-shopping__swatch'
+  ).forEach(function (swatch) {
+    const index = Number(swatch.dataset.optionIndex);
 
-      elements.price.textContent = 'This combination is unavailable.';
-      elements.button.disabled = true;
-      elements.button.querySelector('span:first-child').textContent =
-        'UNAVAILABLE';
+    const selected =
+      swatch.dataset.optionValue === selectedOptions[index];
 
-      return;
-    }
+    swatch.classList.toggle('is-selected', selected);
+    swatch.setAttribute('aria-pressed', String(selected));
+  });
 
-    activeVariant = matchingVariant;
-
-    updatePrice(elements);
-
-    elements.image.src =
-      matchingVariant.featured_image ||
-      activeProduct.featured_image ||
-      '';
-
-    elements.image.alt = activeProduct.title || '';
-
-    const available = isVariantAvailable(matchingVariant);
-
-    elements.button.disabled = !available;
-
+  if (!matchingVariant) {
+    activeVariant = null;
+    elements.price.textContent = 'This combination is unavailable.';
+    elements.button.disabled = true;
     elements.button.querySelector('span:first-child').textContent =
-      available ? 'ADD TO CART' : 'SOLD OUT';
+      'UNAVAILABLE';
+    return;
   }
+
+  activeVariant = matchingVariant;
+
+  updatePrice(elements);
+
+  elements.image.src =
+    matchingVariant.featured_image ||
+    activeProduct.featured_image ||
+    '';
+
+  const available = isVariantAvailable(matchingVariant);
+
+  elements.button.disabled = !available;
+
+  elements.button.querySelector('span:first-child').textContent =
+    available ? 'ADD TO CART' : 'SOLD OUT';
+}
+
 
   /*
    * Display Color first, Size second, then all remaining options.
