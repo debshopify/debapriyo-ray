@@ -559,53 +559,58 @@
     });
   }
 
-  function updateVariant(elements) {
+  
+    function updateVariant(elements) {
     if (!activeProduct || !activeProduct.variants.length) return;
 
     const selectedOptions = getSelectedOptions(elements);
 
     const matchingVariant = activeProduct.variants.find(function (variant) {
-      return variant.options.every(function (value, index) {
-        return value === selectedOptions[index];
-      });
+        return variant.options.every(function (value, index) {
+        return String(value) === String(selectedOptions[index]);
+        });
     });
 
-    // Keep the swatch appearance synchronized with the user's selection.
-    elements.options.querySelectorAll('.interactive-shopping__swatch').forEach(
-      function (swatch) {
+    elements.options.querySelectorAll(
+        '.interactive-shopping__swatch'
+    ).forEach(function (swatch) {
         const index = Number(swatch.dataset.optionIndex);
 
         swatch.classList.toggle(
-          'is-selected',
-          swatch.dataset.optionValue === selectedOptions[index]
+        'is-selected',
+        swatch.dataset.optionValue === selectedOptions[index]
         );
-      }
-    );
+    });
 
     if (!matchingVariant) {
-      activeVariant = null;
-
-      elements.price.textContent = 'This combination is unavailable.';
-      elements.button.disabled = true;
-      elements.button.querySelector('span:first-child').textContent = 'UNAVAILABLE';
-
-      return;
+        activeVariant = null;
+        elements.price.textContent = 'This combination is unavailable.';
+        elements.button.disabled = true;
+        elements.button.querySelector('span:first-child').textContent =
+        'UNAVAILABLE';
+        return;
     }
 
     activeVariant = matchingVariant;
 
+    const isAvailable =
+        matchingVariant.available === true ||
+        matchingVariant.available === 'true' ||
+        matchingVariant.available === 1;
+
     updatePrice(elements);
 
     elements.image.src =
-      activeVariant.featured_image ||
-      activeProduct.featured_image ||
-      '';
+        matchingVariant.featured_image ||
+        activeProduct.featured_image ||
+        '';
 
-    elements.button.disabled = !activeVariant.available;
+    elements.button.disabled = !isAvailable;
 
     elements.button.querySelector('span:first-child').textContent =
-      activeVariant.available ? 'ADD TO CART' : 'SOLD OUT';
-  }
+        isAvailable ? 'ADD TO CART' : 'SOLD OUT';
+    }
+
 
   /*
    * Render Color first, then Size, then any remaining options.
@@ -726,67 +731,67 @@
   }
 
   
-function openPopup(root, product, trigger) {
-  if (
-    !product ||
-    !Array.isArray(product.variants) ||
-    !Array.isArray(product.options) ||
-    product.variants.length === 0
-  ) {
-    console.error('Invalid Shopify product data:', product);
-    return;
-  }
+    function openPopup(root, product, trigger) {
+    if (
+        !product ||
+        !Array.isArray(product.variants) ||
+        !Array.isArray(product.options) ||
+        product.variants.length === 0
+    ) {
+        console.error('Invalid Shopify product data:', product);
+        return;
+    }
 
-  // Find the first available variant.
-  const firstAvailableVariant = product.variants.find(function (variant) {
-    return variant.available === true ||
-           variant.available === 'true' ||
-           variant.available === 1;
-  });
+    // Find the first available variant.
+    const firstAvailableVariant = product.variants.find(function (variant) {
+        return variant.available === true ||
+            variant.available === 'true' ||
+            variant.available === 1;
+    });
 
-  // Fallback to the first variant if none is available.
-  const initialVariant = firstAvailableVariant || product.variants[0];
+    // Fallback to the first variant if none is available.
+    const initialVariant = firstAvailableVariant || product.variants[0];
 
-  activeRoot = root;
-  activeProduct = product;
-  activeVariant = initialVariant;
-  previousFocus = trigger;
+    activeRoot = root;
+    activeProduct = product;
+    activeVariant = initialVariant;
+    previousFocus = trigger;
 
-  const elements = getElements(root);
+    const elements = getElements(root);
 
-  elements.image.src = initialVariant.featured_image ||
-                       product.featured_image || '';
+    elements.image.src = initialVariant.featured_image ||
+                        product.featured_image || '';
 
-  elements.image.alt = product.title || '';
-  elements.title.textContent = product.title || '';
+    elements.image.alt = product.title || '';
+    elements.title.textContent = product.title || '';
 
-  // Render description safely as text.
-  const descriptionElement = document.createElement('div');
-  descriptionElement.innerHTML = product.description || '';
-  elements.description.textContent = descriptionElement.textContent || '';
+    // Render description safely as text.
+    const descriptionElement = document.createElement('div');
+    descriptionElement.innerHTML = product.description || '';
+    elements.description.textContent = descriptionElement.textContent || '';
 
-  elements.message.textContent = '';
+    elements.message.textContent = '';
 
-  // Render controls using the selected variant.
-  renderOptions(product, elements);
+    // Render controls using the selected variant.
+    renderOptions(product, elements);
 
-  // Update the selected variant, price, image and availability.
-  updateVariant(root);
+    // Update the selected variant, price, image and availability.
+    updateVariant(root);
 
-  elements.popup.classList.add('is-open');
-  elements.popup.setAttribute('aria-hidden', 'false');
+    elements.popup.classList.add('is-open');
+    elements.popup.setAttribute('aria-hidden', 'false');
 
-  document.body.style.overflow = 'hidden';
-  elements.close.focus();
+    document.body.style.overflow = 'hidden';
+    elements.close.focus();
 
-  console.log('Popup opened:', product.title);
-  console.log('Available variants:', product.variants.filter(function (variant) {
-    return variant.available === true ||
-           variant.available === 'true' ||
-           variant.available === 1;
-  }));
-  console.log('Initially selected variant:', activeVariant);
-}
+    console.log('Popup opened:', product.title);
+    console.log('Available variants:', product.variants.filter(function (variant) {
+        return variant.available === true ||
+            variant.available === 'true' ||
+            variant.available === 1;
+    }));
+    console.log('Initially selected variant:', activeVariant);
+    }
 
 
   function closePopup() {
@@ -863,7 +868,14 @@ function openPopup(root, product, trigger) {
 
     event.preventDefault();
 
-    if (!activeVariant || !activeVariant.available) {
+    if (
+    !activeVariant ||
+    !(
+        activeVariant.available === true ||
+        activeVariant.available === 'true' ||
+        activeVariant.available === 1
+    )
+    ) {
       elements.message.textContent = 'Please select an available variant.';
       return;
     }
