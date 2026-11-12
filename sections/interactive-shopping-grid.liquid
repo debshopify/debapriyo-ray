@@ -718,7 +718,8 @@ function renderOptions(product, elements) {
       hiddenSelect.tabIndex = -1;
       hiddenSelect.setAttribute('aria-hidden', 'true');
 
-      values.forEach(function (value) {
+      
+        values.forEach(function (value) {
         const option = document.createElement('option');
         option.value = value;
         option.textContent = value;
@@ -729,34 +730,42 @@ function renderOptions(product, elements) {
         swatch.className = 'interactive-shopping__swatch';
         swatch.dataset.optionIndex = index;
         swatch.dataset.optionValue = value;
-        swatch.style.backgroundColor = getSwatchColor(value);
         swatch.setAttribute('aria-label', value);
-        swatch.setAttribute('title', value);
         swatch.setAttribute('aria-pressed', 'false');
 
-        // Handle swatch click.
+        // First span: color preview
+        const colorSpan = document.createElement('span');
+        colorSpan.className = 'interactive-shopping__swatch-color';
+        colorSpan.style.backgroundColor = getSwatchColor(value);
+
+        // Second span: color name
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'interactive-shopping__swatch-name';
+        nameSpan.textContent = value;
+
+        // Add both spans inside the button
+        swatch.append(colorSpan, nameSpan);
+
+        // Handle swatch selection
         swatch.addEventListener('click', function () {
-          const selectedValue = this.dataset.optionValue;
+            hiddenSelect.value = this.dataset.optionValue;
 
-          hiddenSelect.value = selectedValue;
-
-          // Update active swatch.
-          swatchContainer
+            swatchContainer
             .querySelectorAll('.interactive-shopping__swatch')
             .forEach(function (button) {
-              button.classList.remove('is-active');
-              button.setAttribute('aria-pressed', 'false');
+                button.classList.remove('is-selected');
+                button.setAttribute('aria-pressed', 'false');
             });
 
-          this.classList.add('is-active');
-          this.setAttribute('aria-pressed', 'true');
+            this.classList.add('is-selected');
+            this.setAttribute('aria-pressed', 'true');
 
-          // Find matching Shopify variant.
-          updateVariant(elements);
+            updateVariant(elements);
         });
 
         swatchContainer.appendChild(swatch);
-      });
+        });
+
 
       // Set initial color from the active variant.
       hiddenSelect.value = activeVariant.options[index];
