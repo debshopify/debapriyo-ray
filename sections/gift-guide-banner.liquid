@@ -97,14 +97,16 @@
         {% endif %}
 
         {% if section.settings.heading != blank %}
-          <h1 class="gift-guide__heading">
-            {{ section.settings.heading | escape }}
-          </h1>
+          <div class="gift-guide__head-des-main">
+            <h1 class="gift-guide__heading">
+              {{ section.settings.heading | escape }}
+            </h1>
         {% endif %}
 
         {% if section.settings.description != blank %}
-          <div class="gift-guide__description">
-            {{ section.settings.description }}
+            <div class="gift-guide__description">
+              {{ section.settings.description }}
+            </div>
           </div>
         {% endif %}
 
