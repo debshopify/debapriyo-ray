@@ -21,7 +21,7 @@
         "header_height": 65,
         "hero_image": "shopify://shop_images/Frame.svg",
         "image_position": "center center",
-        "mobile_image_position": "center bottom",
+        "mobile_image_position": "center center",
         "show_overlay": false,
         "overlay_color": "#ffffff",
         "overlay_opacity": 20,
