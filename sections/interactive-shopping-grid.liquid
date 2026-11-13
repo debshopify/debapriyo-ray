@@ -105,17 +105,19 @@
       aria-labelledby="ShoppingProductTitle-{{ section.id }}"
       tabindex="-1"
     >
-      <button
-        type="button"
-        class="interactive-shopping__close"
-        data-popup-close
-        aria-label="Close popup"
-      >
-        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4.24219 4.24279L12.7275 12.7281" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round" stroke="black"/>
-          <path d="M4.24219 12.7278L12.7275 4.24249" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round" stroke="black"/>
-        </svg>
-      </button>
+      <div class="close-modal-cross">
+        <button
+          type="button"
+          class="interactive-shopping__close"
+          data-popup-close
+          aria-label="Close popup"
+        >
+          <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.24219 4.24279L12.7275 12.7281" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round" stroke="black"/>
+            <path d="M4.24219 12.7278L12.7275 4.24249" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round" stroke="black"/>
+          </svg>
+        </button>
+      </div>
 
       <div class="interactive-shopping__product">
         <div class="interactive-shopping__product-image-wrapper">
@@ -301,6 +303,10 @@
     font-size: 18px !important;
     line-height: 100% !important;
     letter-spacing: -2% !important;
+  }
+
+  .close-modal-cross {
+    width: 100%;
   }
 
   .interactive-shopping__option select:not([hidden]) {
