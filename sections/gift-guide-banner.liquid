@@ -1,7 +1,7 @@
 
 {% comment %}
   Gift Guide Banner
-  Shopify Online Store 2.0 section
+  Shopify Online Store 2.0 Section
 {% endcomment %}
 
 <section
@@ -132,6 +132,10 @@
 </section>
 
 <style>
+  /* =====================================
+     MAIN SECTION
+  ===================================== */
+
   #GiftGuide-{{ section.id }} {
     width: 100%;
     overflow: hidden;
@@ -145,7 +149,9 @@
     box-sizing: border-box;
   }
 
-  /* HEADER */
+  /* =====================================
+     HEADER
+  ===================================== */
 
   #GiftGuide-{{ section.id }} .gift-guide__header {
     width: 100%;
@@ -160,6 +166,7 @@
     min-height: {{ section.settings.header_height }}px;
     margin: 0 auto;
     padding: 6px 5%;
+
     display: grid;
     grid-template-columns: 1fr 1.5fr 1fr;
     align-items: center;
@@ -194,15 +201,20 @@
     line-height: 1.4;
   }
 
-  /* HERO */
+  /* =====================================
+     HERO BANNER
+  ===================================== */
 
   #GiftGuide-{{ section.id }} .gift-guide__hero {
     position: relative;
     isolation: isolate;
+
     display: flex;
     align-items: center;
+
     width: 100%;
     min-height: {{ section.settings.hero_height }}px;
+
     background: var(--gg-hero-bg);
   }
 
@@ -210,6 +222,7 @@
     position: absolute;
     inset: 0;
     z-index: -2;
+
     display: block;
     width: 100%;
     height: 100%;
@@ -219,6 +232,7 @@
     display: block;
     width: 100%;
     height: 100%;
+
     object-fit: cover;
     object-position: {{ section.settings.image_position }};
   }
@@ -227,8 +241,10 @@
     position: absolute;
     inset: 0;
     z-index: -1;
+
     background: {{ section.settings.overlay_color }};
     opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+
     pointer-events: none;
   }
 
@@ -237,6 +253,7 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 60px 5%;
+
     display: flex;
     align-items: center;
   }
@@ -244,11 +261,13 @@
   #GiftGuide-{{ section.id }} .gift-guide__content {
     width: 100%;
     max-width: var(--gg-content-width);
+
     animation: giftGuideFadeIn-{{ section.id }} 0.9s ease both;
   }
 
   #GiftGuide-{{ section.id }} .gift-guide__eyebrow {
     margin: 0 0 12px;
+
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 2px;
@@ -257,6 +276,7 @@
 
   #GiftGuide-{{ section.id }} .gift-guide__heading {
     margin: 0 0 24px;
+
     color: var(--gg-text);
     font-size: clamp(36px, 4.5vw, {{ section.settings.heading_size }}px);
     line-height: 1.08;
@@ -267,6 +287,7 @@
   #GiftGuide-{{ section.id }} .gift-guide__description {
     max-width: 440px;
     margin-bottom: 28px;
+
     font-size: 13px;
     line-height: 1.65;
   }
@@ -275,25 +296,41 @@
     margin: 0 0 10px;
   }
 
-  /* BUTTONS */
+  /* =====================================
+     COMMON BUTTON DESIGN
+  ===================================== */
 
   #GiftGuide-{{ section.id }} .gift-guide__button {
     position: relative;
+
     display: inline-flex;
-    justify-content: space-between;
+    width: 220px;
+    min-width: 220px;
+    height: 50px;
+    min-height: 50px;
+
+    padding: 0 42px 0 20px;
+
+    justify-content: center;
     align-items: center;
-    gap: 24px;
-    min-height: 44px;
-    padding: 0 22px;
-    overflow: hidden;
-    border: 1px solid var(--gg-button-bg);
+
     background: var(--gg-button-bg);
     color: var(--gg-button-text);
+
+    border: 1px solid var(--gg-button-bg);
+    border-radius: 0;
+
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
     text-decoration: none;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
     text-transform: uppercase;
+
+    cursor: pointer;
+    overflow: hidden;
+
     transition:
       background-color 0.3s ease,
       color 0.3s ease,
@@ -301,71 +338,120 @@
       transform 0.3s ease;
   }
 
+  /* Button text */
+
+  #GiftGuide-{{ section.id }} .gift-guide__button > span:first-child {
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+  }
+
+  /* Arrow positioning */
+
+  #GiftGuide-{{ section.id }} .gift-guide__arrow {
+    position: absolute;
+    right: 17px;
+    top: 50%;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 25px;
+    font-weight: 300;
+    line-height: 1;
+
+    transform: translateY(-50%);
+    transition: transform 0.35s ease;
+  }
+
+  /* Button hover */
+
   #GiftGuide-{{ section.id }} .gift-guide__button:hover {
     background: transparent;
     color: var(--gg-text);
     border-color: var(--gg-text);
-    transform: translateY(-3px);
-  }
 
-  #GiftGuide-{{ section.id }} .gift-guide__arrow {
-    display: inline-block;
-    font-size: 21px;
-    line-height: 1;
-    transition: transform 0.35s cubic-bezier(.2, .8, .2, 1);
+    transform: translateY(-2px);
   }
 
   #GiftGuide-{{ section.id }} .gift-guide__button:hover .gift-guide__arrow {
-    transform: translateX(7px);
+    transform: translate(6px, -50%);
   }
 
-  /* HEADER BUTTON */
+  /* =====================================
+     HEADER BUTTON
+  ===================================== */
 
   #GiftGuide-{{ section.id }} .gift-guide__button--header {
     justify-self: end;
-    min-width: 143px;
-    min-height: 38px;
-    padding: 0 15px;
+
+    width: 175px;
+    min-width: 175px;
+    height: 40px;
+    min-height: 40px;
+
+    padding: 0 38px 0 14px;
+
     background: var(--gg-accent);
-    border-color: var(--gg-accent);
     color: #111111;
-    font-size: 11px;
+    border-color: var(--gg-accent);
+
+    font-size: 12px;
   }
 
   #GiftGuide-{{ section.id }} .gift-guide__button--header:hover {
     background: #111111;
-    border-color: #111111;
     color: #ffffff;
+    border-color: #111111;
   }
 
-  /* HERO BUTTON */
+  #GiftGuide-{{ section.id }} .gift-guide__button--header .gift-guide__arrow {
+    right: 12px;
+    font-size: 22px;
+  }
+
+  /* =====================================
+     HERO BUTTON
+  ===================================== */
 
   #GiftGuide-{{ section.id }} .gift-guide__button--hero {
-    min-width: 134px;
+    width: 220px;
+    min-width: 220px;
+    height: 50px;
+    min-height: 50px;
   }
 
-  /* FOOTER */
+  /* =====================================
+     FOOTER STRIP
+  ===================================== */
 
   #GiftGuide-{{ section.id }} .gift-guide__footer {
     width: 100%;
     min-height: {{ section.settings.footer_height }}px;
+
     padding: 5px 15px;
+
     display: flex;
     justify-content: center;
     align-items: center;
+
     background: var(--gg-footer-bg);
     text-align: center;
   }
 
   #GiftGuide-{{ section.id }} .gift-guide__footer p {
     margin: 0;
+
     font-size: 10px;
     line-height: 1.4;
     letter-spacing: 0.3px;
     text-transform: uppercase;
   }
 
-  /* CONTENT ENTRANCE ANIMATION */
+  /* =====================================
+     CONTENT ANIMATION
+  ===================================== */
 
   @keyframes giftGuideFadeIn-{{ section.id }} {
     from {
@@ -379,12 +465,16 @@
     }
   }
 
-  /* MOBILE RESPONSIVE */
+  /* =====================================
+     MOBILE RESPONSIVE
+  ===================================== */
 
   @media screen and (max-width: 749px) {
+
     #GiftGuide-{{ section.id }} .gift-guide__header-inner {
       min-height: auto;
       padding: 12px 16px;
+
       grid-template-columns: 1fr auto;
       gap: 8px;
     }
@@ -402,11 +492,17 @@
     }
 
     #GiftGuide-{{ section.id }} .gift-guide__button--header {
-      min-width: auto;
-      min-height: 34px;
-      padding: 0 12px;
-      gap: 12px;
-      font-size: 9px;
+      width: 155px;
+      min-width: 155px;
+      height: 40px;
+      min-height: 40px;
+
+      padding: 0 34px 0 10px;
+      font-size: 10px;
+    }
+
+    #GiftGuide-{{ section.id }} .gift-guide__button--header .gift-guide__arrow {
+      right: 10px;
     }
 
     #GiftGuide-{{ section.id }} .gift-guide__hero {
@@ -437,12 +533,21 @@
       font-size: 12px;
     }
 
+    #GiftGuide-{{ section.id }} .gift-guide__button--hero {
+      width: 220px;
+      min-width: 220px;
+      height: 50px;
+      min-height: 50px;
+    }
+
     #GiftGuide-{{ section.id }} .gift-guide__footer p {
       font-size: 9px;
     }
   }
 
-  /* ACCESSIBILITY */
+  /* =====================================
+     REDUCED MOTION ACCESSIBILITY
+  ===================================== */
 
   @media (prefers-reduced-motion: reduce) {
     #GiftGuide-{{ section.id }} *,
