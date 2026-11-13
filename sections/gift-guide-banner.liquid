@@ -562,7 +562,22 @@
 
 /* Both buttons use the same design */
 
-#GiftGuide-{{ section.id }} .gift-guide__button--header,
+#GiftGuide-{{ section.id }} .gift-guide__button--header {
+  width: 220px;
+  min-width: 220px;
+  height: 50px;
+  min-height: 50px;
+
+  padding: 0 42px 0 20px;
+
+  background: #FFF544;
+  color: #000;
+  border: 1px solid FFF544;
+
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
 #GiftGuide-{{ section.id }} .gift-guide__button--hero {
   width: 220px;
   min-width: 220px;
@@ -586,7 +601,15 @@
 }
 
 /* Same hover animation */
-#GiftGuide-{{ section.id }} .gift-guide__button--header:hover,
+
+#GiftGuide-{{ section.id }} .gift-guide__button--header:hover {
+
+  background: #000;
+  color: #fff;
+  border-color: #000;
+  transform: translateY(-2px);
+}
+
 #GiftGuide-{{ section.id }} .gift-guide__button--hero:hover {
   background: transparent;
   color: #000;
