@@ -25,6 +25,11 @@ html {
   scroll-behavior: smooth;
 }
 
+h1, h2, h3, h4, h5, p {
+  font-family: "Jost", sans-serif !important;
+  font-style: normal;
+}
+
 @media (min-width: 990px) {
   html:has(.page-wrapper),
   html:has(.page-wrapper) body {
