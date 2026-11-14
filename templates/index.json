@@ -54,8 +54,8 @@
           "type": "shopping_item",
           "settings": {
             "product": "black-leather-bag",
-            "hotspot_x": 50,
-            "hotspot_y": 50
+            "hotspot_x": 55,
+            "hotspot_y": 60
           }
         },
         "shopping_item_jJEAND": {
