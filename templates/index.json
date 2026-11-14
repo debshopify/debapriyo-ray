@@ -20,6 +20,7 @@
         "header_button_label": "CHOOSE GIFT",
         "header_button_link": "",
         "header_height": 65,
+        "hero_image": "shopify://shop_images/Frame_24.png",
         "image_position": "center center",
         "mobile_image_position": "center center",
         "show_overlay": false,
