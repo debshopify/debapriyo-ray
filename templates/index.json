@@ -78,8 +78,8 @@
           "type": "shopping_item",
           "settings": {
             "product": "classic-leather-jacket",
-            "hotspot_x": 50,
-            "hotspot_y": 50
+            "hotspot_x": 73,
+            "hotspot_y": 18
           }
         },
         "shopping_item_aam9TG": {
@@ -87,7 +87,7 @@
           "settings": {
             "product": "classic-varsity-top",
             "hotspot_x": 50,
-            "hotspot_y": 50
+            "hotspot_y": 29
           }
         },
         "shopping_item_EDffEU": {
