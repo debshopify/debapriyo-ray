@@ -21,6 +21,7 @@
         "header_button_link": "",
         "header_height": 65,
         "hero_image": "shopify://shop_images/Frame_24.png",
+        "mobile_image": "shopify://shop_images/Frame_25.png",
         "image_position": "center center",
         "mobile_image_position": "center center",
         "show_overlay": false,
