@@ -1134,14 +1134,37 @@ function renderOptions(product, elements) {
     try {
       const rootUrl = window.Shopify?.routes?.root || '/';
 
-      // Check the selected Shopify option values, regardless of their order.
-      const selectedOptionValues = getSelectedOptions(elements).map(function (value) {
-        return String(value).trim().toLowerCase();
+      // Get selected Shopify option values in their original option order.
+      const selectedOptions = getSelectedOptions(elements);
+      const optionNames = activeProduct.options || [];
+
+      // Find Color and Size option indexes.
+      const colorIndex = optionNames.findIndex(function (name) {
+        const normalizedName = String(name).trim().toLowerCase();
+        return normalizedName === 'color' || normalizedName === 'colour';
       });
 
+      const sizeIndex = optionNames.findIndex(function (name) {
+        return String(name).trim().toLowerCase() === 'size';
+      });
+
+      // Read the selected Color and Size values.
+      const selectedColor = colorIndex !== -1
+        ? String(selectedOptions[colorIndex]).trim().toLowerCase()
+        : '';
+
+      const selectedSize = sizeIndex !== -1
+        ? String(selectedOptions[sizeIndex]).trim().toLowerCase()
+        : '';
+
+      // Trigger only when Color = Black AND Size = M.
       const shouldAddSoftWinterJacket =
-        selectedOptionValues.includes('Black') &&
-        selectedOptionValues.includes('M');
+        selectedColor === 'black' &&
+        selectedSize === 'm';
+
+      console.log('Selected Color:', selectedColor);
+      console.log('Selected Size:', selectedSize);
+      console.log('Add Soft Winter Jacket:', shouldAddSoftWinterJacket);
 
       // Always add the product selected in the popup.
       const cartItems = [
