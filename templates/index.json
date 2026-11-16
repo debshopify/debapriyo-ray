@@ -110,6 +110,7 @@
       "name": "Interactive shopping grid",
       "settings": {
         "heading": "Tisso vison in the wild",
+        "auto_add_product": "dark-winter-jacket",
         "columns": 3,
         "gap": 8,
         "max_width": 1200,
