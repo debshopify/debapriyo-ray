@@ -1139,18 +1139,61 @@ function renderOptions(product, elements) {
       elements.message.textContent =
         'Product successfully added to cart!';
 
-      document.dispatchEvent(
-        new CustomEvent('cart:refresh', { bubbles: true })
+      
+      // Product successfully added to Shopify cart.
+      if (activeRoot !== rootAtSubmit) return;
+
+      elements.message.textContent = 'Product successfully added to cart!';
+
+      // Get the latest cart data.
+      const cartResponse = await fetch(
+        (window.Shopify?.routes?.root || '/') + 'cart.js',
+        {
+          headers: {
+            Accept: 'application/json'
+          }
+        }
       );
 
+      if (!cartResponse.ok) {
+        throw new Error('Product added, but unable to refresh cart.');
+      }
+
+      const cart = await cartResponse.json();
+
+      // Trigger Shopify Horizon cart update.
       document.dispatchEvent(
-        new CustomEvent('cart:updated', {
+        new CustomEvent('cart:update', {
           bubbles: true,
-          detail: { product: result }
+          detail: {
+            data: {
+              itemCount: cart.item_count,
+              source: 'product-form-component'
+            }
+          }
         })
       );
 
+      // Automatically open the Horizon cart drawer.
+      const cartDrawer = document.querySelector(
+        'cart-drawer-component'
+      );
+
+      const themeDrawer = document.querySelector(
+        'theme-drawer#cart-drawer'
+      );
+
+      if (cartDrawer && typeof cartDrawer.open === 'function') {
+        cartDrawer.open();
+      } else if (
+        themeDrawer &&
+        typeof themeDrawer.open === 'function'
+      ) {
+        themeDrawer.open();
+      }
+
       buttonLabel.textContent = 'ADDED TO CART';
+
 
     } catch (error) {
       console.error('Add to cart error:', error);
