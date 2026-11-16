@@ -1170,14 +1170,21 @@ function renderOptions(product, elements) {
           throw new Error('Please select Soft Winter Jacket in the Interactive Shopping Grid section settings.');
         }
 
-        const autoAddVariant = autoAddProduct.variants.find(function (variant) {
-          return variant.available === true ||
-            variant.available === 'true' ||
-            variant.available === 1;
-        });
+        // Use the product's default variant (the first variant returned by Shopify),
+        // rather than searching for a different available variant.
+        const autoAddVariant = autoAddProduct.variants[0];
 
         if (!autoAddVariant) {
-          throw new Error('Soft Winter Jacket is currently unavailable. Please try again later.');
+          throw new Error('No default variant was found for Soft Winter Jacket.');
+        }
+
+        const defaultVariantAvailable =
+          autoAddVariant.available === true ||
+          autoAddVariant.available === 'true' ||
+          autoAddVariant.available === 1;
+
+        if (!defaultVariantAvailable) {
+          throw new Error('The default variant of Soft Winter Jacket is unavailable. Please make its default variant available in Shopify.');
         }
 
         // Avoid adding the exact same variant twice.
