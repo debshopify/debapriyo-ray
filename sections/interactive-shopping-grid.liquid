@@ -1108,20 +1108,27 @@ function renderOptions(product, elements) {
     elements.message.textContent = 'Adding product to cart...';
 
     try {
-      const response = await fetch(
-        (window.Shopify?.routes?.root || '/') + 'cart/add.js',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            id: variantId,
-            quantity: 1
-          })
-        }
-      );
+      const rootUrl = window.Shopify?.routes?.root || '/';
+
+      // Add the selected variant and ask Shopify to render the updated
+      // Horizon cart drawer in the same request.
+      const response = await fetch(rootUrl + 'cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          items: [
+            {
+              id: variantId,
+              quantity: 1
+            }
+          ],
+          sections: 'cart-drawer-section',
+          sections_url: window.location.pathname
+        })
+      });
 
       const result = await response.json();
 
@@ -1136,32 +1143,66 @@ function renderOptions(product, elements) {
       // Do not update a popup that has been closed or replaced.
       if (activeRoot !== rootAtSubmit) return;
 
-      elements.message.textContent =
-        'Product successfully added to cart!';
+      let drawerHTML = result.sections && result.sections['cart-drawer-section'];
 
-      
-      // Product successfully added to Shopify cart.
-      if (activeRoot !== rootAtSubmit) return;
-
-      elements.message.textContent = 'Product successfully added to cart!';
-
-      // Get the latest cart data.
-      const cartResponse = await fetch(
-        (window.Shopify?.routes?.root || '/') + 'cart.js',
-        {
-          headers: {
-            Accept: 'application/json'
+      // Fallback for stores where bundled section rendering returns no HTML.
+      if (!drawerHTML) {
+        const sectionResponse = await fetch(
+          rootUrl + '?sections=cart-drawer-section',
+          {
+            headers: {
+              'Accept': 'application/json'
+            }
           }
+        );
+
+        if (!sectionResponse.ok) {
+          throw new Error('Product added, but the cart drawer could not be refreshed.');
         }
+
+        const sectionData = await sectionResponse.json();
+        drawerHTML = sectionData['cart-drawer-section'];
+      }
+
+      if (!drawerHTML) {
+        throw new Error('Product added, but Horizon did not return the cart drawer section.');
+      }
+
+      // Parse the server-rendered drawer markup.
+      const parser = new DOMParser();
+      const parsedDocument = parser.parseFromString(drawerHTML, 'text/html');
+      const newDrawerSection = parsedDocument.querySelector(
+        '#shopify-section-cart-drawer-section'
+      );
+      const currentDrawerSection = document.querySelector(
+        '#shopify-section-cart-drawer-section'
       );
 
+      if (!newDrawerSection || !currentDrawerSection) {
+        throw new Error(
+          'Could not find #shopify-section-cart-drawer-section. Check that the Horizon cart type is set to Drawer.'
+        );
+      }
+
+      // Replace the complete section so the drawer's products, totals,
+      // empty state and cart badge are all rendered from the latest cart.
+      const refreshedDrawerSection = document.importNode(newDrawerSection, true);
+      currentDrawerSection.replaceWith(refreshedDrawerSection);
+
+      // Fetch the cart count for Horizon's cart update event.
+      const cartResponse = await fetch(rootUrl + 'cart.js', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
       if (!cartResponse.ok) {
-        throw new Error('Product added, but unable to refresh cart.');
+        throw new Error('Product added and drawer refreshed, but cart details could not be loaded.');
       }
 
       const cart = await cartResponse.json();
 
-      // Trigger Shopify Horizon cart update.
+      // Notify Horizon header/cart components that the cart changed.
       document.dispatchEvent(
         new CustomEvent('cart:update', {
           bubbles: true,
@@ -1174,26 +1215,22 @@ function renderOptions(product, elements) {
         })
       );
 
-      // Automatically open the Horizon cart drawer.
-      const cartDrawer = document.querySelector(
-        'cart-drawer-component'
-      );
+      // Close the product popup first so it cannot cover the cart drawer.
+      closePopup();
 
-      const themeDrawer = document.querySelector(
-        'theme-drawer#cart-drawer'
-      );
+      // Horizon owns the drawer open/close behavior on theme-drawer.
+      const themeDrawer = document.querySelector('theme-drawer#cart-drawer');
+      const cartDrawer = document.querySelector('cart-drawer-component');
 
-      if (cartDrawer && typeof cartDrawer.open === 'function') {
-        cartDrawer.open();
-      } else if (
-        themeDrawer &&
-        typeof themeDrawer.open === 'function'
-      ) {
+      if (themeDrawer && typeof themeDrawer.open === 'function') {
         themeDrawer.open();
+      } else if (cartDrawer && typeof cartDrawer.open === 'function') {
+        cartDrawer.open();
+      } else {
+        throw new Error('Horizon cart drawer was refreshed, but its open method was not found.');
       }
 
       buttonLabel.textContent = 'ADDED TO CART';
-
 
     } catch (error) {
       console.error('Add to cart error:', error);
