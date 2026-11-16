@@ -109,6 +109,30 @@
     {% endfor %}
   </div>
 
+  {% assign auto_add_product = section.settings.auto_add_product %}
+  <script
+    type="application/json"
+    id="AutoAddProduct-{{ section.id }}"
+    data-auto-add-product
+  >
+    {% if auto_add_product != blank %}
+      {
+        "id": {{ auto_add_product.id | json }},
+        "title": {{ auto_add_product.title | json }},
+        "variants": [
+          {% for variant in auto_add_product.variants %}
+            {
+              "id": {{ variant.id | json }},
+              "available": {{ variant.available | json }}
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ]
+      }
+    {% else %}
+      null
+    {% endif %}
+  </script>
+
   <!-- PRODUCT POPUP -->
   <div
     class="interactive-shopping__overlay"
@@ -1110,8 +1134,63 @@ function renderOptions(product, elements) {
     try {
       const rootUrl = window.Shopify?.routes?.root || '/';
 
-      // Add the selected variant and ask Shopify to render the updated
-      // Horizon cart drawer in the same request.
+      // Check the selected Shopify option values, regardless of their order.
+      const selectedOptionValues = getSelectedOptions(elements).map(function (value) {
+        return String(value).trim().toLowerCase();
+      });
+
+      const shouldAddSoftWinterJacket =
+        selectedOptionValues.includes('black') &&
+        selectedOptionValues.includes('medium');
+
+      // Always add the product selected in the popup.
+      const cartItems = [
+        {
+          id: variantId,
+          quantity: 1
+        }
+      ];
+
+      // If Black + Medium is selected, add the configured Soft Winter Jacket.
+      // The first available variant of that product is used.
+      if (shouldAddSoftWinterJacket) {
+        const autoAddProductElement = rootAtSubmit.querySelector('[data-auto-add-product]');
+
+        let autoAddProduct = null;
+
+        if (autoAddProductElement) {
+          try {
+            autoAddProduct = JSON.parse(autoAddProductElement.textContent.trim());
+          } catch (parseError) {
+            throw new Error('The automatic add-on product settings contain invalid product data.');
+          }
+        }
+
+        if (!autoAddProduct || !Array.isArray(autoAddProduct.variants)) {
+          throw new Error('Please select Soft Winter Jacket in the Interactive Shopping Grid section settings.');
+        }
+
+        const autoAddVariant = autoAddProduct.variants.find(function (variant) {
+          return variant.available === true ||
+            variant.available === 'true' ||
+            variant.available === 1;
+        });
+
+        if (!autoAddVariant) {
+          throw new Error('Soft Winter Jacket is currently unavailable. Please try again later.');
+        }
+
+        // Avoid adding the exact same variant twice.
+        if (String(autoAddVariant.id) !== String(variantId)) {
+          cartItems.push({
+            id: autoAddVariant.id,
+            quantity: 1
+          });
+        }
+      }
+
+      // Add the selected product (and the conditional add-on, if applicable)
+      // in one Shopify request so the Horizon drawer receives the complete cart.
       const response = await fetch(rootUrl + 'cart/add.js', {
         method: 'POST',
         headers: {
@@ -1119,12 +1198,7 @@ function renderOptions(product, elements) {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          items: [
-            {
-              id: variantId,
-              quantity: 1
-            }
-          ],
+          items: cartItems,
           sections: 'cart-drawer-section',
           sections_url: window.location.pathname
         })
@@ -1278,6 +1352,12 @@ function renderOptions(product, elements) {
       "id": "heading",
       "label": "Heading",
       "default": "Shop the look"
+    },
+    {
+      "type": "product",
+      "id": "auto_add_product",
+      "label": "Automatically add product",
+      "info": "Choose Soft Winter Jacket. Its first available variant will be added when the selected product has Black and Medium options."
     },
     {
       "type": "range",
